@@ -1,48 +1,48 @@
 // Sample product data
-const products = [
-    {
-        id: 1,
-        title: 'Item #1',
-        price: 19.99,
-        image: 'assets/product1.jpg'
-    },
-    {
-        id: 2,
-        title: 'Item #1',
-        price: 19.99,
-        image: 'assets/product2.jpg'
-    },
-    {
-        id: 3,
-        title: 'Item #1',
-        price: 19.99,
-        image: 'assets/product3.jpg'
-    },
-    {
-        id: 4,
-        title: 'Item #1',
-        price: 19.99,
-        image: 'assets/product4.jpg'
-    }
-];
+const products = [];
 
-// Populate products grid
-function populateProducts() {
-    const productsGrid = document.querySelector('.products-grid');
-    
-    products.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <img src="${product.image}" alt="${product.title}">
-            <div class="product-info">
-                <h3 class="product-title">${product.title}</h3>
-                <div class="product-price">$${product.price.toFixed(2)}</div>
-            </div>
-        `;
-        productsGrid.appendChild(productCard);
-    });
+// Funzione per caricare i prodotti
+async function loadProducts(category = '') {
+    try {
+        let url = 'api/products.php?action=';
+        if (category === '') {
+            url += 'getNew';
+        } else {
+            url += 'getByCategory&category=' + encodeURIComponent(category);
+        }
+        
+        const response = await fetch(url);
+        const productsData = await response.json();
+        
+        // Aggiorna l'interfaccia con i prodotti
+        displayProducts(productsData);
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
 }
+
+// Funzione per visualizzare i prodotti
+function displayProducts(productsData) {
+    const productsContainer = document.querySelector('.products-grid');
+    if (!productsContainer) return;
+    
+    productsContainer.innerHTML = productsData.map(product => `
+        <div class="product-card">
+            <img src="${product.image_url}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <span class="price">€${product.price}</span>
+        </div>
+    `).join('');
+}
+
+// Carica i prodotti quando si cambia categoria
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        const category = e.target.dataset.category || '';
+        loadProducts(category);
+    });
+});
 
 // Handle navigation
 function setupNavigation() {
@@ -109,7 +109,7 @@ function setupSearch() {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    populateProducts();
+    loadProducts();
     setupNavigation();
     setupTabs();
     setupSearch();
