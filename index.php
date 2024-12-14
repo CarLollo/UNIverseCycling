@@ -9,7 +9,6 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNIverse Cycling</title>
     <link rel="stylesheet" href="/UNIverseCycling/css/style.css">
-    <link rel="stylesheet" href="/UNIverseCycling/css/products.css">
 </head>
 <body>
     <div class="app">

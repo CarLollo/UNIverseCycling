@@ -1,16 +1,14 @@
 <header>
-    <button class="search-icon">
-        <img src="/UNIverseCycling/assets/icons/search.svg" alt="Search">
-    </button>
-    
     <div class="logo">
         <img src="/UNIverseCycling/assets/logo.svg" alt="UNIverseCycling">
     </div>
-
-    <div class="search-input">
-        <button class="close-search">
-            <img src="/UNIverseCycling/assets/icons/close.svg" alt="Close">
+    <div class="search-container">
+        <button class="search-icon">
+            <img src="/UNIverseCycling/assets/icons/search.svg" alt="Search">
         </button>
-        <input type="text" placeholder="Search...">
+        <div class="search-input">
+            <input type="search" placeholder="Search...">
+            <button class="close-search">×</button>
+        </div>
     </div>
 </header>
