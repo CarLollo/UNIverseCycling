@@ -7,8 +7,9 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNIverseCycling</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>UNIverse Cycling</title>
+    <link rel="stylesheet" href="/UNIverseCycling/css/style.css">
+    <link rel="stylesheet" href="/UNIverseCycling/css/products.css">
 </head>
 <body>
     <div class="app">
@@ -16,6 +17,7 @@ session_start();
         <?php include 'pages/main_content.php'; ?>
         <?php include 'pages/bottom_nav.php'; ?>
     </div>
-    <script src="js/app.js"></script>
+
+    <script src="/UNIverseCycling/js/app.js"></script>
 </body>
 </html>

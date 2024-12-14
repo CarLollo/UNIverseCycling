@@ -1,19 +1,22 @@
 <nav class="bottom-nav">
     <a href="#" class="active">
-        <img src="icons/home.svg" class="icon-filled" alt="Home">
-        <img src="icons/home-outline.svg" class="icon-outline" alt="Home">
+        <img src="assets/icons/home-filled.svg" class="icon-filled" alt="Home">
+        <img src="assets/icons/home-outline.svg" class="icon-outline" alt="Home">
+        <span>Home</span>
     </a>
     <a href="#">
-        <img src="icons/cart.svg" class="icon-filled" alt="Cart">
-        <img src="icons/cart-outline.svg" class="icon-outline" alt="Cart">
+        <img src="assets/icons/cart-filled.svg" class="icon-filled" alt="Cart">
+        <img src="assets/icons/cart-outline.svg" class="icon-outline" alt="Cart">
+        <span>My Order</span>
     </a>
     <a href="#">
-        <img src="icons/notifications.svg" class="icon-filled" alt="Notifications">
-        <img src="icons/notifications-outline.svg" class="icon-outline" alt="Notifications">
-        <span class="badge">1</span>
+        <img src="assets/icons/heart-filled.svg" class="icon-filled" alt="Favorite">
+        <img src="assets/icons/heart-outline.svg" class="icon-outline" alt="Favorite">
+        <span>Favorite</span>
     </a>
     <a href="#">
-        <img src="icons/person.svg" class="icon-filled" alt="Profile">
-        <img src="icons/person-outline.svg" class="icon-outline" alt="Profile">
+        <img src="assets/icons/person-filled.svg" class="icon-filled" alt="Profile">
+        <img src="assets/icons/person-outline.svg" class="icon-outline" alt="Profile">
+        <span>My Profile</span>
     </a>
 </nav>
