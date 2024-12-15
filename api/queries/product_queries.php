@@ -32,21 +32,29 @@ class ProductQueries {
 
     public function getProductsByCategory($categoryId) {
         $query = "
-            SELECT p.product_id, p.name, p.price, p.image_path
+            SELECT p.product_id, p.name, p.description, p.price, p.image_path
             FROM product p
-            INNER JOIN product_category pc ON p.product_id = pc.product_id
+            JOIN product_category pc ON p.product_id = pc.product_id
             WHERE pc.category_id = ?
             ORDER BY p.name";
 
         try {
             $stmt = $this->mysqli->prepare($query);
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $this->mysqli->error);
+            }
+            
             $stmt->bind_param("i", $categoryId);
             $stmt->execute();
+            
+            if ($stmt->error) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
+            
             $result = $stmt->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         } catch (Exception $e) {
-            error_log("Error in getProductsByCategory: " . $e->getMessage());
-            return [];
+            throw $e;
         }
     }
 

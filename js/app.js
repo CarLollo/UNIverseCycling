@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="product-info">
                             <h3>${product.name}</h3>
+                            <p class="description">${product.description}</p>
                             <p class="price">€${product.price}</p>
                         </div>
                     </div>
@@ -128,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupCategoryNavigation() {
         const categoryItems = document.querySelectorAll('.category-item');
         const backButton = document.querySelector('.back-button');
-        const categoriesPage = document.querySelector('.categorie-page');
+        const categoriesPage = document.querySelector('.categories-page');
         const categoryProductsPage = document.querySelector('.category-products-page');
 
         categoryItems.forEach(item => {
@@ -156,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="product-info">
                                     <h3>${product.name}</h3>
+                                    <p class="description">${product.description}</p>
                                     <p class="price">€${product.price}</p>
                                 </div>
                             </div>
@@ -167,14 +169,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     categoryProductsPage.classList.add('active');
 
                 } catch (error) {
-                    console.error('Error:', error);
                     categoryProductsPage.querySelector('.products-grid').innerHTML = 
                         '<p>Error loading products. Please try again.</p>';
                 }
             });
         });
 
-        // Add click event to back button
+        // Handle back button
         backButton.addEventListener('click', () => {
             categoryProductsPage.classList.remove('active');
             categoriesPage.classList.add('active');
