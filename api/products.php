@@ -1,49 +1,61 @@
 <?php
+require_once '../config/db_config.php';
+require_once 'queries/product_queries.php';
+require_once 'queries/category_queries.php';
+
+// Set headers
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-require_once '../config/db_config.php';
 
-// Get the requested action
-$action = $_GET['action'] ?? '';
+// Create query objects
+$productQueries = new ProductQueries($mysqli);
+$categoryQueries = new CategoryQueries($mysqli);
 
-// Function to return JSON response
+// Helper function to send JSON response
 function sendJsonResponse($data) {
     echo json_encode($data);
     exit;
 }
 
+// Get the action from the request
+$action = $_GET['action'] ?? '';
+
 // Handle different actions
-switch($action) {
+switch ($action) {
     case 'getAll':
-        $result = $mysqli->query('SELECT * FROM products');
-        $products = $result->fetch_all(MYSQLI_ASSOC);
+        $products = $productQueries->getAllProducts();
         sendJsonResponse($products);
         break;
         
-    case 'getByCategory':
-        $category = $_GET['category'] ?? '';
+    case 'search':
+        if (!isset($_GET['query'])) {
+            http_response_code(400);
+            sendJsonResponse(['error' => 'Search query is required']);
+        }
         
-        // Prepare statement
-        $stmt = $mysqli->prepare('SELECT * FROM products WHERE category = ?');
-        $stmt->bind_param('s', $category);
-        $stmt->execute();
-        
-        // Get results
-        $result = $stmt->get_result();
-        $products = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        
+        $products = $productQueries->searchProducts($_GET['query']);
         sendJsonResponse($products);
         break;
         
     case 'getNew':
-        $result = $mysqli->query('SELECT * FROM products WHERE is_new = 1 LIMIT 10');
-        $products = $result->fetch_all(MYSQLI_ASSOC);
+        $products = $productQueries->getNewArrivals();
+        sendJsonResponse($products);
+        break;
+        
+    case 'getByCategory':
+        if (!isset($_GET['category_id'])) {
+            http_response_code(400);
+            sendJsonResponse(['error' => 'Category ID is required']);
+        }
+        
+        $products = $productQueries->getProductsByCategory($_GET['category_id']);
         sendJsonResponse($products);
         break;
         
     default:
+        http_response_code(400);
         sendJsonResponse(['error' => 'Invalid action']);
+        break;
 }
 
 // Close database connection
