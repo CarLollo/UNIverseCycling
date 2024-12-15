@@ -7,17 +7,24 @@ header('Content-Type: application/json');
 $action = $_GET['action'] ?? '';
 $productQueries = new ProductQueries($mysqli);
 
-// Using a fixed user ID for now
-$userId = 1;
+// Use test user email
+$userEmail = 'test@example.com';
 
 try {
     switch ($action) {
         case 'add':
-            $productId = $_POST['productId'] ?? null;
-            $quantity = $_POST['quantity'] ?? null;
+            // Get product data
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['productId']) || !isset($data['quantity'])) {
+                throw new Exception('Missing required fields');
+            }
 
-            if (!$productId || !$quantity) {
-                throw new Exception('Product ID and quantity are required');
+            $productId = $data['productId'];
+            $quantity = $data['quantity'];
+
+            if ($quantity <= 0) {
+                throw new Exception('Quantity must be greater than 0');
             }
 
             // Check if there's enough stock before adding to cart
@@ -27,21 +34,21 @@ try {
             }
 
             // Add to cart
-            $productQueries->addToCart($userId, $productId, $quantity);
+            $productQueries->addToCart($userEmail, $productId, $quantity);
             
             // Get updated cart count
-            $cartCount = $productQueries->getCartCount($userId);
+            $cartCount = $productQueries->getCartCount($userEmail);
             
             echo json_encode(['success' => true, 'cartCount' => $cartCount]);
             break;
 
         case 'get':
-            $items = $productQueries->getCartItems($userId);
+            $items = $productQueries->getCartItems($userEmail);
             echo json_encode($items);
             break;
 
         case 'count':
-            $count = $productQueries->getCartCount($userId);
+            $count = $productQueries->getCartCount($userEmail);
             echo json_encode(['count' => $count]);
             break;
 

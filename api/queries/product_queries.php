@@ -105,12 +105,12 @@ class ProductQueries {
         }
     }
 
-    public function addToCart($userId, $productId, $quantity) {
+    public function addToCart($email, $productId, $quantity) {
         // First check if the product is already in the cart
         $checkQuery = "
             SELECT quantity 
             FROM cart 
-            WHERE user_id = ? AND product_id = ?";
+            WHERE email = ? AND product_id = ?";
 
         try {
             $stmt = $this->mysqli->prepare($checkQuery);
@@ -118,7 +118,7 @@ class ProductQueries {
                 throw new Exception("Prepare failed: " . $this->mysqli->error);
             }
             
-            $stmt->bind_param("ii", $userId, $productId);
+            $stmt->bind_param("si", $email, $productId);
             $stmt->execute();
             
             $result = $stmt->get_result();
@@ -128,18 +128,18 @@ class ProductQueries {
                 $updateQuery = "
                     UPDATE cart 
                     SET quantity = quantity + ? 
-                    WHERE user_id = ? AND product_id = ?";
+                    WHERE email = ? AND product_id = ?";
                 
                 $stmt = $this->mysqli->prepare($updateQuery);
-                $stmt->bind_param("iii", $quantity, $userId, $productId);
+                $stmt->bind_param("isi", $quantity, $email, $productId);
             } else {
                 // Insert new cart item
                 $insertQuery = "
-                    INSERT INTO cart (user_id, product_id, quantity) 
+                    INSERT INTO cart (email, product_id, quantity) 
                     VALUES (?, ?, ?)";
                 
                 $stmt = $this->mysqli->prepare($insertQuery);
-                $stmt->bind_param("iii", $userId, $productId, $quantity);
+                $stmt->bind_param("sii", $email, $productId, $quantity);
             }
             
             $stmt->execute();
@@ -147,19 +147,19 @@ class ProductQueries {
             if ($stmt->error) {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
-
+            
             return true;
         } catch (Exception $e) {
             throw $e;
         }
     }
 
-    public function getCartItems($userId) {
+    public function getCartItems($email) {
         $query = "
             SELECT c.cart_id, p.product_id, p.name, p.price, p.image_path, c.quantity
             FROM cart c
             JOIN product p ON c.product_id = p.product_id
-            WHERE c.user_id = ?
+            WHERE c.email = ?
             ORDER BY c.cart_id DESC";
 
         try {
@@ -168,7 +168,7 @@ class ProductQueries {
                 throw new Exception("Prepare failed: " . $this->mysqli->error);
             }
             
-            $stmt->bind_param("i", $userId);
+            $stmt->bind_param("s", $email);
             $stmt->execute();
             
             if ($stmt->error) {
@@ -182,11 +182,11 @@ class ProductQueries {
         }
     }
 
-    public function getCartCount($userId) {
+    public function getCartCount($email) {
         $query = "
             SELECT COUNT(*) as count
             FROM cart
-            WHERE user_id = ?";
+            WHERE email = ?";
 
         try {
             $stmt = $this->mysqli->prepare($query);
@@ -194,7 +194,7 @@ class ProductQueries {
                 throw new Exception("Prepare failed: " . $this->mysqli->error);
             }
             
-            $stmt->bind_param("i", $userId);
+            $stmt->bind_param("s", $email);
             $stmt->execute();
             
             if ($stmt->error) {

@@ -357,13 +357,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const quantity = parseInt(quantityInput.value);
                     
                     try {
-                        const formData = new FormData();
-                        formData.append('productId', product.product_id);
-                        formData.append('quantity', quantity);
-
                         const response = await fetch('/UNIverseCycling/api/cart.php?action=add', {
                             method: 'POST',
-                            body: formData
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                productId: product.product_id,
+                                quantity: quantity
+                            })
                         });
 
                         const result = await response.json();
