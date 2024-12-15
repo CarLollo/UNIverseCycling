@@ -1,10 +1,10 @@
 <nav class="bottom-nav">
-    <a href="#" class="active">
+    <a href="#home" class="active">
         <img src="assets/icons/home-filled.svg" class="icon-filled" alt="Home">
         <img src="assets/icons/home-outline.svg" class="icon-outline" alt="Home">
         <span>Home</span>
     </a>
-    <a href="#">
+    <a href="#cart">
         <img src="assets/icons/cart-filled.svg" class="icon-filled" alt="Cart">
         <img src="assets/icons/cart-outline.svg" class="icon-outline" alt="Cart">
         <span>My Order</span>

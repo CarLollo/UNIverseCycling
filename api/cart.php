@@ -42,6 +42,47 @@ try {
             echo json_encode(['success' => true, 'cartCount' => $cartCount]);
             break;
 
+        case 'update':
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['productId']) || !isset($data['quantity'])) {
+                throw new Exception('Missing required fields');
+            }
+
+            $productId = $data['productId'];
+            $quantity = $data['quantity'];
+
+            if ($quantity <= 0) {
+                throw new Exception('Quantity must be greater than 0');
+            }
+
+            // Update cart item
+            $productQueries->updateCartItemQuantity($userEmail, $productId, $quantity);
+            
+            // Get updated cart count
+            $cartCount = $productQueries->getCartCount($userEmail);
+            
+            echo json_encode(['success' => true, 'cartCount' => $cartCount]);
+            break;
+
+        case 'remove':
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['productId'])) {
+                throw new Exception('Missing product ID');
+            }
+
+            $productId = $data['productId'];
+
+            // Remove from cart
+            $productQueries->removeFromCart($userEmail, $productId);
+            
+            // Get updated cart count
+            $cartCount = $productQueries->getCartCount($userEmail);
+            
+            echo json_encode(['success' => true, 'cartCount' => $cartCount]);
+            break;
+
         case 'get':
             $items = $productQueries->getCartItems($userEmail);
             echo json_encode($items);

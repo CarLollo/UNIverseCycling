@@ -101,111 +101,101 @@ class ProductQueries {
             $result = $stmt->get_result();
             return $result->fetch_assoc();
         } catch (Exception $e) {
-            throw $e;
+            error_log("Error in getProductById: " . $e->getMessage());
+            return null;
         }
     }
 
-    public function addToCart($email, $productId, $quantity) {
-        // First check if the product is already in the cart
-        $checkQuery = "
-            SELECT quantity 
-            FROM cart 
-            WHERE email = ? AND product_id = ?";
-
-        try {
-            $stmt = $this->mysqli->prepare($checkQuery);
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->mysqli->error);
-            }
-            
-            $stmt->bind_param("si", $email, $productId);
-            $stmt->execute();
-            
-            $result = $stmt->get_result();
-            
-            if ($result->num_rows > 0) {
-                // Update existing cart item
-                $updateQuery = "
-                    UPDATE cart 
-                    SET quantity = quantity + ? 
-                    WHERE email = ? AND product_id = ?";
-                
-                $stmt = $this->mysqli->prepare($updateQuery);
-                $stmt->bind_param("isi", $quantity, $email, $productId);
-            } else {
-                // Insert new cart item
-                $insertQuery = "
-                    INSERT INTO cart (email, product_id, quantity) 
-                    VALUES (?, ?, ?)";
-                
-                $stmt = $this->mysqli->prepare($insertQuery);
-                $stmt->bind_param("sii", $email, $productId, $quantity);
-            }
-            
-            $stmt->execute();
-            
-            if ($stmt->error) {
-                throw new Exception("Execute failed: " . $stmt->error);
-            }
-            
-            return true;
-        } catch (Exception $e) {
-            throw $e;
-        }
-    }
-
-    public function getCartItems($email) {
-        $query = "
-            SELECT c.cart_id, p.product_id, p.name, p.price, p.image_path, c.quantity
-            FROM cart c
-            JOIN product p ON c.product_id = p.product_id
-            WHERE c.email = ?
-            ORDER BY c.cart_id DESC";
-
+    public function getCartItems($userEmail) {
+        $query = "SELECT c.product_id, c.quantity, p.name, p.price, p.image_path 
+                 FROM cart c 
+                 JOIN product p ON c.product_id = p.product_id 
+                 WHERE c.email = ?";
+        
         try {
             $stmt = $this->mysqli->prepare($query);
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->mysqli->error);
-            }
-            
-            $stmt->bind_param("s", $email);
+            $stmt->bind_param("s", $userEmail);
             $stmt->execute();
             
-            if ($stmt->error) {
-                throw new Exception("Execute failed: " . $stmt->error);
-            }
-
             $result = $stmt->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         } catch (Exception $e) {
-            throw $e;
+            error_log("Error in getCartItems: " . $e->getMessage());
+            return [];
         }
     }
 
-    public function getCartCount($email) {
-        $query = "
-            SELECT COUNT(*) as count
-            FROM cart
-            WHERE email = ?";
-
+    public function updateCartItemQuantity($userEmail, $productId, $quantity) {
+        $query = "UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?";
         try {
             $stmt = $this->mysqli->prepare($query);
-            if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->mysqli->error);
-            }
-            
-            $stmt->bind_param("s", $email);
+            $stmt->bind_param("isi", $quantity, $userEmail, $productId);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error in updateCartItemQuantity: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function removeFromCart($userEmail, $productId) {
+        $query = "DELETE FROM cart WHERE email = ? AND product_id = ?";
+        try {
+            $stmt = $this->mysqli->prepare($query);
+            $stmt->bind_param("si", $userEmail, $productId);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error in removeFromCart: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getCartCount($userEmail) {
+        $query = "SELECT SUM(quantity) as count FROM cart WHERE email = ?";
+        try {
+            $stmt = $this->mysqli->prepare($query);
+            $stmt->bind_param("s", $userEmail);
             $stmt->execute();
             
-            if ($stmt->error) {
-                throw new Exception("Execute failed: " . $stmt->error);
-            }
-
             $result = $stmt->get_result();
             $row = $result->fetch_assoc();
-            return $row['count'];
+            
+            return $row['count'] ?? 0;
         } catch (Exception $e) {
-            throw $e;
+            error_log("Error in getCartCount: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function addToCart($userEmail, $productId, $quantity = 1) {
+        // Check if item already exists in cart
+        $checkQuery = "SELECT quantity FROM cart WHERE email = ? AND product_id = ?";
+        
+        try {
+            $stmt = $this->mysqli->prepare($checkQuery);
+            $stmt->bind_param("si", $userEmail, $productId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                // Update existing quantity
+                $row = $result->fetch_assoc();
+                $newQuantity = $row['quantity'] + $quantity;
+                
+                $updateQuery = "UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?";
+                $stmt = $this->mysqli->prepare($updateQuery);
+                $stmt->bind_param("isi", $newQuantity, $userEmail, $productId);
+                return $stmt->execute();
+            } else {
+                // Insert new item
+                $insertQuery = "INSERT INTO cart (email, product_id, quantity) VALUES (?, ?, ?)";
+                $stmt = $this->mysqli->prepare($insertQuery);
+                $stmt->bind_param("sii", $userEmail, $productId, $quantity);
+                return $stmt->execute();
+            }
+        } catch (Exception $e) {
+            error_log("Error in addToCart: " . $e->getMessage());
+            return false;
         }
     }
 }
+?>
