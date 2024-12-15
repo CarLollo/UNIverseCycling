@@ -308,10 +308,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 productPage.querySelector('.product-price .amount').textContent = product.price;
                 productPage.querySelector('.stock-amount').textContent = product.stock;
 
-                // Setup quantity controls
+                // Reset and setup quantity controls
                 const quantityInput = productPage.querySelector('.quantity-input');
                 const minusBtn = productPage.querySelector('.quantity-btn.minus');
                 const plusBtn = productPage.querySelector('.quantity-btn.plus');
+                
+                // Reset quantity to 1 for new product
+                quantityInput.value = 1;
                 
                 const updateQuantityButtons = () => {
                     const currentValue = parseInt(quantityInput.value);
