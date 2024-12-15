@@ -79,6 +79,18 @@
                     <span class="currency">€</span>
                     <span class="amount"></span>
                 </div>
+                <div class="product-stock">
+                    <span class="stock-label">Available: </span>
+                    <span class="stock-amount"></span>
+                </div>
+                <div class="product-quantity">
+                    <label for="quantity">Quantity:</label>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus">-</button>
+                        <input type="number" id="quantity" value="1" min="1" class="quantity-input">
+                        <button class="quantity-btn plus">+</button>
+                    </div>
+                </div>
                 <button class="add-to-cart">
                     <span class="plus-icon">+</span>
                     Add to cart

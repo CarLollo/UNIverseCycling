@@ -306,6 +306,82 @@ document.addEventListener('DOMContentLoaded', function() {
                 productPage.querySelector('.product-image-large img').alt = product.name;
                 productPage.querySelector('.product-description p').textContent = product.description;
                 productPage.querySelector('.product-price .amount').textContent = product.price;
+                productPage.querySelector('.stock-amount').textContent = product.stock;
+
+                // Setup quantity controls
+                const quantityInput = productPage.querySelector('.quantity-input');
+                const minusBtn = productPage.querySelector('.quantity-btn.minus');
+                const plusBtn = productPage.querySelector('.quantity-btn.plus');
+                
+                const updateQuantityButtons = () => {
+                    const currentValue = parseInt(quantityInput.value);
+                    minusBtn.disabled = currentValue <= 1;
+                    plusBtn.disabled = currentValue >= product.stock;
+                };
+
+                minusBtn.onclick = () => {
+                    const currentValue = parseInt(quantityInput.value);
+                    if (currentValue > 1) {
+                        quantityInput.value = currentValue - 1;
+                        updateQuantityButtons();
+                    }
+                };
+
+                plusBtn.onclick = () => {
+                    const currentValue = parseInt(quantityInput.value);
+                    if (currentValue < product.stock) {
+                        quantityInput.value = currentValue + 1;
+                        updateQuantityButtons();
+                    }
+                };
+
+                quantityInput.onchange = () => {
+                    let value = parseInt(quantityInput.value);
+                    if (isNaN(value) || value < 1) {
+                        value = 1;
+                    } else if (value > product.stock) {
+                        value = product.stock;
+                    }
+                    quantityInput.value = value;
+                    updateQuantityButtons();
+                };
+
+                updateQuantityButtons();
+
+                // Setup add to cart
+                const addToCartBtn = productPage.querySelector('.add-to-cart');
+                addToCartBtn.onclick = async () => {
+                    const quantity = parseInt(quantityInput.value);
+                    
+                    try {
+                        const formData = new FormData();
+                        formData.append('productId', product.product_id);
+                        formData.append('quantity', quantity);
+
+                        const response = await fetch('/UNIverseCycling/api/cart.php?action=add', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        
+                        if (!response.ok) {
+                            throw new Error(result.error || 'Failed to add to cart');
+                        }
+                        
+                        // Reset quantity input
+                        quantityInput.value = 1;
+                        updateQuantityButtons();
+                        
+                        // Show success message
+                        alert('Product added to cart successfully!');
+                        
+                        // Update cart count
+                        updateCartCount(result.cartCount);
+                    } catch (error) {
+                        alert(error.message);
+                    }
+                };
 
                 // Setup color circles
                 const colors = ['#CD5C5C', '#6A5ACD', '#2F4F4F', '#66CDAA'];
@@ -335,22 +411,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
 
-                // Setup add to cart
-                const addToCartBtn = productPage.querySelector('.add-to-cart');
-                addToCartBtn.onclick = () => {
-                    // TODO: Implement add to cart functionality
-                    console.log('Added to cart:', product);
-                };
-
             } catch (error) {
                 console.error('Error loading product details:', error);
             }
         });
     }
 
+    // Initialize cart count
+    async function initializeCartCount() {
+        try {
+            const response = await fetch('/UNIverseCycling/api/cart.php?action=count');
+            const result = await response.json();
+            updateCartCount(result.count);
+        } catch (error) {
+            console.error('Error getting cart count:', error);
+        }
+    }
+
+    function updateCartCount(count) {
+        const cartIcon = document.querySelector('.bottom-nav a[href="#cart"] i');
+        if (cartIcon) {
+            const badge = cartIcon.querySelector('.cart-badge') || document.createElement('span');
+            badge.className = 'cart-badge';
+            badge.textContent = count;
+            if (!badge.parentNode) {
+                cartIcon.appendChild(badge);
+            }
+            badge.style.display = count > 0 ? 'block' : 'none';
+        }
+    }
+
     // Initialize everything
     setupNavigation();
     setupTabs();
-    setupSearch();
+    loadNewArrivals();
     setupProductClick();
+    initializeCartCount();
 });
