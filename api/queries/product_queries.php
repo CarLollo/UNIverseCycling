@@ -78,4 +78,30 @@ class ProductQueries {
             return [];
         }
     }
+
+    public function getProductById($productId) {
+        $query = "
+            SELECT p.product_id, p.name, p.description, p.price, p.image_path
+            FROM product p
+            WHERE p.product_id = ?";
+
+        try {
+            $stmt = $this->mysqli->prepare($query);
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $this->mysqli->error);
+            }
+            
+            $stmt->bind_param("i", $productId);
+            $stmt->execute();
+            
+            if ($stmt->error) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
+
+            $result = $stmt->get_result();
+            return $result->fetch_assoc();
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }

@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const productsGrid = document.querySelector('.home-page .products-grid');
             productsGrid.innerHTML = products.length > 0 
                 ? products.map(product => `
-                    <div class="product-card">
+                    <div class="product-card" data-product-id="${product.product_id}">
                         <div class="product-image">
                             <img src="/UNIverseCycling/${product.image_path}" 
                                  alt="${product.name}"
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const productsGrid = categoryProductsPage.querySelector('.products-grid');
                     productsGrid.innerHTML = products.length > 0 
                         ? products.map(product => `
-                            <div class="product-card">
+                            <div class="product-card" data-product-id="${product.product_id}">
                                 <div class="product-image">
                                     <img src="/UNIverseCycling/${product.image_path}" 
                                          alt="${product.name}"
@@ -275,8 +275,82 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Handle product click
+    function setupProductClick() {
+        let previousPage = null;
+
+        document.addEventListener('click', async (e) => {
+            const productCard = e.target.closest('.product-card');
+            if (!productCard) return;
+
+            const productId = productCard.dataset.productId;
+            if (!productId) return;
+
+            try {
+                const response = await fetch(`/UNIverseCycling/api/products.php?action=getProduct&id=${productId}`);
+                if (!response.ok) throw new Error('Failed to fetch product details');
+                const product = await response.json();
+
+                // Store current active page before switching
+                previousPage = document.querySelector('.page.active');
+
+                // Hide all pages and show product page
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                const productPage = document.querySelector('.product-page');
+                productPage.classList.add('active');
+                document.querySelector('.tabs').style.display = 'none';
+
+                // Update product page content
+                productPage.querySelector('.product-title').textContent = product.name;
+                productPage.querySelector('.product-image-large img').src = `/UNIverseCycling/${product.image_path}`;
+                productPage.querySelector('.product-image-large img').alt = product.name;
+                productPage.querySelector('.product-description p').textContent = product.description;
+                productPage.querySelector('.product-price .amount').textContent = product.price;
+
+                // Setup color circles
+                const colors = ['#CD5C5C', '#6A5ACD', '#2F4F4F', '#66CDAA'];
+                const colorCircles = colors.map(color => `
+                    <div class="color-circle" style="background-color: ${color}"></div>
+                `).join('');
+                productPage.querySelector('.color-circles').innerHTML = colorCircles;
+
+                // Setup color selection
+                const circles = productPage.querySelectorAll('.color-circle');
+                circles.forEach(circle => {
+                    circle.addEventListener('click', () => {
+                        circles.forEach(c => c.classList.remove('active'));
+                        circle.classList.add('active');
+                    });
+                });
+
+                // Setup back button
+                const backButton = productPage.querySelector('.back-button');
+                backButton.onclick = () => {
+                    productPage.classList.remove('active');
+                    document.querySelector('.tabs').style.display = 'flex';
+                    if (previousPage) {
+                        previousPage.classList.add('active');
+                    } else {
+                        document.querySelector('.home-page').classList.add('active');
+                    }
+                };
+
+                // Setup add to cart
+                const addToCartBtn = productPage.querySelector('.add-to-cart');
+                addToCartBtn.onclick = () => {
+                    // TODO: Implement add to cart functionality
+                    console.log('Added to cart:', product);
+                };
+
+            } catch (error) {
+                console.error('Error loading product details:', error);
+            }
+        });
+    }
+
     // Initialize everything
     setupNavigation();
     setupTabs();
     setupSearch();
+    setupProductClick();
 });

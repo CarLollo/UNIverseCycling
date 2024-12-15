@@ -54,6 +54,39 @@
         </div>
     </div>
 
+    <!-- Product Page -->
+    <div class="page product-page">
+        <div class="page-header">
+            <button class="back-button">
+                <span class="back-arrow">←</span> Back
+            </button>
+            <h2 class="product-title"></h2>
+        </div>
+        <div class="product-content">
+            <div class="product-image-large">
+                <img src="" alt="">
+            </div>
+            <div class="product-details">
+                <div class="color-options">
+                    <h3>Color</h3>
+                    <div class="color-circles"></div>
+                </div>
+                <div class="product-description">
+                    <h3>Description</h3>
+                    <p></p>
+                </div>
+                <div class="product-price">
+                    <span class="currency">€</span>
+                    <span class="amount"></span>
+                </div>
+                <button class="add-to-cart">
+                    <span class="plus-icon">+</span>
+                    Add to cart
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Results Container -->
     <div class="search-results">
         <!-- Search results will be loaded via AJAX -->
