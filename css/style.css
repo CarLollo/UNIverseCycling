@@ -270,7 +270,7 @@ main {
 .categories-list {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: 2rem;
     padding-bottom: 1rem;
 }
 
@@ -291,9 +291,16 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
 }
 
-.category-info h3 {
+.category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-text h3 {
     font-size: 1.1rem;
     color: #333;
     margin: 0;
@@ -302,6 +309,20 @@ main {
 .product-count {
     color: var(--text-color);
     font-size: 0.875rem;
+}
+
+.category-image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Bottom Navigation */

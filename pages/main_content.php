@@ -93,8 +93,15 @@ try {
                 <?php while($category = $categories->fetch_assoc()): ?>
                     <div class="category-item">
                         <div class="category-info">
-                            <h3><?php echo htmlspecialchars($category['name']); ?></h3>
-                            <span class="product-count"><?php echo $category['product_count']; ?> Products</span>
+                            <div class="category-text">
+                                <h3><?php echo htmlspecialchars($category['name']); ?></h3>
+                                <span class="product-count"><?php echo $category['product_count']; ?> Products</span>
+                            </div>
+                            <div class="category-image">
+                                <img src="/UNIverseCycling/<?php echo htmlspecialchars($category['image_path']); ?>" 
+                                     alt="<?php echo htmlspecialchars($category['name']); ?>"
+                                     onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
+                            </div>
                         </div>
                     </div>
                 <?php endwhile; ?>
