@@ -188,6 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('.search-input');
         const closeSearch = document.querySelector('.close-search');
         const searchField = searchInput ? searchInput.querySelector('input') : null;
+        const searchResults = document.querySelector('.search-results');
+        const pages = document.querySelectorAll('.page');
+        const homePage = document.querySelector('.home-page');
+        const tabs = document.querySelector('.tabs');
 
         if (searchIcon && searchInput && closeSearch && searchField) {
             searchIcon.addEventListener('click', () => {
@@ -196,28 +200,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchIcon.style.visibility = 'hidden';
             });
 
-            closeSearch.addEventListener('click', () => {
+            const hideSearch = () => {
                 searchInput.classList.remove('active');
                 searchField.value = '';
                 searchIcon.style.visibility = 'visible';
-            });
+                searchResults.classList.remove('active');
+                // Mostra la home page
+                pages.forEach(page => page.classList.remove('active'));
+                homePage.classList.add('active');
+                tabs.style.display = '';
+            };
+
+            closeSearch.addEventListener('click', hideSearch);
 
             // Add search functionality
             let searchTimeout;
             searchField.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(async () => {
-                    const query = e.target.value.trim();
-                    if (query.length < 2) return;
+                const query = e.target.value.trim();
+                
+                if (query.length < 2) {
+                    searchResults.classList.remove('active');
+                    return;
+                }
 
+                searchTimeout = setTimeout(async () => {
                     try {
                         const response = await fetch(`/UNIverseCycling/api/products.php?action=search&query=${encodeURIComponent(query)}`);
                         if (!response.ok) throw new Error('Search failed');
                         const products = await response.json();
 
+                        // Nascondi tutte le pagine quando mostri i risultati
+                        pages.forEach(page => page.classList.remove('active'));
+                        tabs.style.display = 'none';
+
                         // Update search results
-                        const searchResults = document.querySelector('.search-results');
                         if (searchResults) {
+                            searchResults.classList.add('active');
                             searchResults.innerHTML = products.length > 0
                                 ? products.map(product => `
                                     <div class="search-result-item">
@@ -230,20 +249,32 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                     </div>
                                 `).join('')
-                                : '<p>No products found</p>';
+                                : '<p class="no-results">No products found</p>';
                         }
                     } catch (error) {
                         console.error('Search error:', error);
-                        if (document.querySelector('.search-results')) {
-                            document.querySelector('.search-results').innerHTML = 
-                                '<p>Error performing search. Please try again.</p>';
+                        if (searchResults) {
+                            searchResults.classList.add('active');
+                            searchResults.innerHTML = '<p class="no-results">Error performing search. Please try again.</p>';
                         }
                     }
                 }, 300); // Debounce search requests
             });
+
+            // Handle search on enter key
+            searchField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    const query = searchField.value.trim();
+                    if (query.length >= 2) {
+                        searchField.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
         }
     }
-    
+
     // Initialize everything
     setupNavigation();
     setupTabs();
