@@ -24,10 +24,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const tabIndicator = document.querySelector('.tab-indicator');
         const pages = document.querySelectorAll('.page');
         
+        console.log('Found pages:', pages.length);
+        pages.forEach(page => console.log('Page:', page.className));
+        
         // Set initial indicator position
         const activeTab = document.querySelector('.tabs a.active');
-        tabIndicator.style.width = `${activeTab.offsetWidth}px`;
-        tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+        if (activeTab) {
+            tabIndicator.style.width = `${activeTab.offsetWidth}px`;
+            tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+            
+            // Set initial page visibility
+            const initialPage = activeTab.getAttribute('data-page');
+            pages.forEach(page => {
+                if (page.classList.contains(`${initialPage}-page`)) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                }
+            });
+        }
 
         tabLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -43,9 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Show corresponding page
                 const targetPage = link.getAttribute('data-page');
+                console.log('Switching to page:', targetPage);
+                
                 pages.forEach(page => {
+                    console.log('Checking page:', page.className);
                     page.classList.remove('active');
                     if (page.classList.contains(`${targetPage}-page`)) {
+                        console.log('Activating page:', page.className);
                         page.classList.add('active');
                     }
                 });
@@ -58,14 +77,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchIcon = document.querySelector('.search-icon');
         const searchInput = document.querySelector('.search-input');
         const closeSearch = document.querySelector('.close-search');
-        
+        const searchField = searchInput.querySelector('input');
+
         searchIcon.addEventListener('click', () => {
             searchInput.classList.add('active');
-            searchInput.querySelector('input').focus();
+            searchField.focus();
+            searchIcon.style.visibility = 'hidden'; // Hide search icon when search is active
         });
-        
+
         closeSearch.addEventListener('click', () => {
             searchInput.classList.remove('active');
+            searchField.value = ''; // Clear search input
+            searchIcon.style.visibility = 'visible'; // Show search icon when search is closed
         });
     }
     

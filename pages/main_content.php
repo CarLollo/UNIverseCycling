@@ -87,22 +87,20 @@ try {
         </section>
     </div>
 
-    <div class="main-container">
-        <div class="page category-page">
-            <div class="categories-list">
-                <?php if ($categories && $categories->num_rows > 0): ?>
-                    <?php while($category = $categories->fetch_assoc()): ?>
-                        <div class="category-item">
-                            <div class="category-info">
-                                <h3><?php echo htmlspecialchars($category['name']); ?></h3>
-                                <span class="product-count"><?php echo $category['product_count']; ?> Products</span>
-                            </div>
+    <div class="page category-page">
+        <div class="categories-list">
+            <?php if ($categories && $categories->num_rows > 0): ?>
+                <?php while($category = $categories->fetch_assoc()): ?>
+                    <div class="category-item">
+                        <div class="category-info">
+                            <h3><?php echo htmlspecialchars($category['name']); ?></h3>
+                            <span class="product-count"><?php echo $category['product_count']; ?> Products</span>
                         </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <p class="no-categories">No categories available</p>
-                <?php endif; ?>
-            </div>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p class="no-categories">No categories available</p>
+            <?php endif; ?>
         </div>
     </div>
 </main>
