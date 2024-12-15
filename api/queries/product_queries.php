@@ -208,24 +208,4 @@ class ProductQueries {
             throw $e;
         }
     }
-
-    public function updateCartItemQuantity($userEmail, $productId, $quantity) {
-        $stmt = $this->mysqli->prepare("UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?");
-        $stmt->bind_param("isi", $quantity, $userEmail, $productId);
-        $stmt->execute();
-        
-        if ($stmt->affected_rows === 0) {
-            throw new Exception("Cart item not found");
-        }
-    }
-
-    public function removeFromCart($userEmail, $productId) {
-        $stmt = $this->mysqli->prepare("DELETE FROM cart WHERE email = ? AND product_id = ?");
-        $stmt->bind_param("si", $userEmail, $productId);
-        $stmt->execute();
-        
-        if ($stmt->affected_rows === 0) {
-            throw new Exception("Cart item not found");
-        }
-    }
 }

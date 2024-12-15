@@ -19,52 +19,37 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupTabs() {
         const tabLinks = document.querySelectorAll('.tabs a');
         const tabIndicator = document.querySelector('.tab-indicator');
+        const pages = document.querySelectorAll('.page');
         
-        if (tabLinks.length && tabIndicator) {
-            // Set initial position
-            const activeTab = document.querySelector('.tabs a.active');
-            if (activeTab) {
-                tabIndicator.style.left = activeTab.offsetLeft + 'px';
-                tabIndicator.style.width = activeTab.offsetWidth + 'px';
-            }
-
-            tabLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-
-                    // Hide cart page if visible
-                    const cartPage = document.getElementById('cart-page');
-                    if (cartPage) {
-                        cartPage.style.display = 'none';
+        // Set initial indicator position
+        const activeTab = document.querySelector('.tabs a.active');
+        if (activeTab) {
+            tabIndicator.style.width = `${activeTab.offsetWidth}px`;
+            tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+        }
+        
+        tabLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Update active tab
+                tabLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Move indicator
+                tabIndicator.style.width = `${link.offsetWidth}px`;
+                tabIndicator.style.transform = `translateX(${link.offsetLeft}px)`;
+                
+                // Show corresponding page
+                const targetPage = link.getAttribute('data-page');
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                    if (page.classList.contains(`${targetPage}-page`)) {
+                        page.classList.add('active');
                     }
-
-                    // Remove active class from all links
-                    tabLinks.forEach(l => l.classList.remove('active'));
-                    
-                    // Add active class to clicked link
-                    link.classList.add('active');
-
-                    // Move indicator
-                    tabIndicator.style.left = link.offsetLeft + 'px';
-                    tabIndicator.style.width = link.offsetWidth + 'px';
-
-                    // Show corresponding page
-                    const targetPage = link.getAttribute('data-page');
-                    document.querySelectorAll('.page').forEach(page => {
-                        if (page.classList.contains(targetPage + '-page')) {
-                            page.style.display = 'block';
-                            page.classList.add('active');
-                            if (targetPage === 'categories') {
-                                loadCategories();
-                            }
-                        } else {
-                            page.style.display = 'none';
-                            page.classList.remove('active');
-                        }
-                    });
                 });
             });
-        }
+        });
     }
 
     // Load new arrivals via AJAX
@@ -437,253 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle cart page
-    function setupCart() {
-        const cartLink = document.querySelector('.bottom-nav a[href="#cart"]');
-        if (cartLink) {
-            cartLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Remove active class from all bottom nav links
-                document.querySelectorAll('.bottom-nav a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                // Add active class to cart link
-                cartLink.classList.add('active');
-                showCartPage();
-            });
-        }
-
-        // Add click handler for home link to return to home page
-        const homeLink = document.querySelector('.bottom-nav a[href="#"]');
-        if (homeLink) {
-            homeLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Hide cart page
-                const cartPage = document.getElementById('cart-page');
-                if (cartPage) {
-                    cartPage.style.display = 'none';
-                }
-
-                // Show and reset tabs
-                const tabsNav = document.querySelector('.tabs');
-                if (tabsNav) {
-                    tabsNav.style.display = 'flex';
-                    const homeTab = tabsNav.querySelector('a[data-page="home"]');
-                    if (homeTab) {
-                        document.querySelectorAll('.tabs a').forEach(tab => {
-                            tab.classList.remove('active');
-                        });
-                        homeTab.classList.add('active');
-                    }
-                }
-
-                // Show home page
-                document.querySelectorAll('.page').forEach(page => {
-                    if (page.classList.contains('home-page')) {
-                        page.style.display = 'block';
-                        page.classList.add('active');
-                    } else {
-                        page.style.display = 'none';
-                        page.classList.remove('active');
-                    }
-                });
-
-                // Update active states in bottom nav
-                document.querySelectorAll('.bottom-nav a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                homeLink.classList.add('active');
-
-                // Reset tab indicator
-                const tabIndicator = document.querySelector('.tab-indicator');
-                if (tabIndicator) {
-                    const activeTab = document.querySelector('.tabs a.active');
-                    if (activeTab) {
-                        tabIndicator.style.left = activeTab.offsetLeft + 'px';
-                        tabIndicator.style.width = activeTab.offsetWidth + 'px';
-                    }
-                }
-            });
-        }
-    }
-
-    async function showCartPage() {
-        // Hide all other content pages
-        document.querySelectorAll('.page:not(#cart-page)').forEach(page => {
-            page.classList.remove('active');
-            if (page.id !== 'cart-page') {
-                page.style.display = 'none';
-            }
-        });
-
-        // Show cart page
-        const cartPage = document.getElementById('cart-page');
-        if (cartPage) {
-            cartPage.style.display = 'block';
-            await loadCartItems();
-        }
-
-        // Hide tabs
-        const tabsNav = document.querySelector('.tabs');
-        if (tabsNav) {
-            tabsNav.style.display = 'none';
-        }
-    }
-
-    async function loadCartItems() {
-        const cartItemsContainer = document.querySelector('.cart-items');
-        if (!cartItemsContainer) return;
-
-        try {
-            const response = await fetch('/UNIverseCycling/api/cart.php?action=get');
-            const items = await response.json();
-
-            if (items.length === 0) {
-                cartItemsContainer.innerHTML = `
-                    <div class="empty-cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <p>Your cart is empty</p>
-                    </div>
-                `;
-                updateCartSummary(0);
-                return;
-            }
-
-            let cartHTML = '';
-            let subtotal = 0;
-
-            items.forEach(item => {
-                const total = item.price * item.quantity;
-                subtotal += total;
-
-                cartHTML += `
-                    <div class="cart-item" data-product-id="${item.product_id}">
-                        <img src="/UNIverseCycling/${item.image_path}" alt="${item.name}" class="cart-item-image">
-                        <div class="cart-item-details">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">€${item.price}</div>
-                            <div class="cart-item-quantity">
-                                <div class="quantity-controls">
-                                    <button class="quantity-btn minus" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
-                                    <span class="quantity">${item.quantity}</span>
-                                    <button class="quantity-btn plus">+</button>
-                                </div>
-                                <span class="cart-item-total">€${total.toFixed(2)}</span>
-                            </div>
-                        </div>
-                        <button class="remove-item">×</button>
-                    </div>
-                `;
-            });
-
-            cartItemsContainer.innerHTML = cartHTML;
-            updateCartSummary(subtotal);
-
-            // Setup quantity controls
-            setupQuantityControls();
-
-        } catch (error) {
-            console.error('Error loading cart items:', error);
-            cartItemsContainer.innerHTML = `
-                <div class="empty-cart">
-                    <p>Error loading cart items. Please try again later.</p>
-                </div>
-            `;
-        }
-    }
-
-    function setupQuantityControls() {
-        document.querySelectorAll('.cart-item').forEach(item => {
-            const minusBtn = item.querySelector('.minus');
-            const plusBtn = item.querySelector('.plus');
-            const quantitySpan = item.querySelector('.quantity');
-            const removeBtn = item.querySelector('.remove-item');
-            const productId = item.dataset.productId;
-
-            minusBtn?.addEventListener('click', async () => {
-                const currentQty = parseInt(quantitySpan.textContent);
-                if (currentQty > 1) {
-                    await updateCartItemQuantity(productId, currentQty - 1);
-                }
-            });
-
-            plusBtn?.addEventListener('click', async () => {
-                const currentQty = parseInt(quantitySpan.textContent);
-                await updateCartItemQuantity(productId, currentQty + 1);
-            });
-
-            removeBtn?.addEventListener('click', async () => {
-                await removeCartItem(productId);
-            });
-        });
-    }
-
-    async function updateCartItemQuantity(productId, quantity) {
-        try {
-            const response = await fetch('/UNIverseCycling/api/cart.php?action=update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    productId: productId,
-                    quantity: quantity
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update quantity');
-            }
-
-            // Reload cart items to reflect changes
-            await loadCartItems();
-            
-            // Update cart count
-            const countResponse = await fetch('/UNIverseCycling/api/cart.php?action=count');
-            const countData = await countResponse.json();
-            updateCartCount(countData.count);
-
-        } catch (error) {
-            alert('Error updating quantity: ' + error.message);
-        }
-    }
-
-    async function removeCartItem(productId) {
-        try {
-            const response = await fetch('/UNIverseCycling/api/cart.php?action=remove', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    productId: productId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove item');
-            }
-
-            // Reload cart items to reflect changes
-            await loadCartItems();
-            
-            // Update cart count
-            const countResponse = await fetch('/UNIverseCycling/api/cart.php?action=count');
-            const countData = await countResponse.json();
-            updateCartCount(countData.count);
-
-        } catch (error) {
-            alert('Error removing item: ' + error.message);
-        }
-    }
-
-    function updateCartSummary(subtotal) {
-        const summaryAmount = document.querySelector('.cart-summary .amount');
-        if (summaryAmount) {
-            summaryAmount.textContent = `€${subtotal.toFixed(2)}`;
-        }
-    }
-
     // Initialize cart count
     async function initializeCartCount() {
         try {
@@ -713,6 +451,5 @@ document.addEventListener('DOMContentLoaded', function() {
     setupTabs();
     loadNewArrivals();
     setupProductClick();
-    setupCart();
     initializeCartCount();
 });

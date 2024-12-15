@@ -4,7 +4,7 @@
         <img src="assets/icons/home-outline.svg" class="icon-outline" alt="Home">
         <span>Home</span>
     </a>
-    <a href="#cart">
+    <a href="#">
         <img src="assets/icons/cart-filled.svg" class="icon-filled" alt="Cart">
         <img src="assets/icons/cart-outline.svg" class="icon-outline" alt="Cart">
         <span>My Order</span>

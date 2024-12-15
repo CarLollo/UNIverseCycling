@@ -3,12 +3,12 @@
 ?>
 
 <nav class="tabs">
-        <div class="tab-container">
-            <a href="#" class="active" data-page="home">Home</a>
-            <a href="#" data-page="categories">Categories</a>
-            <div class="tab-indicator"></div>
-        </div>
-    </nav>
+    <div class="tab-container">
+        <a href="#" class="active" data-page="home">Home</a>
+        <a href="#" data-page="categories">Categories</a>
+        <div class="tab-indicator"></div>
+    </div>
+</nav>
 
 <main>
     <!-- Home Page -->
@@ -102,22 +102,5 @@
     <!-- Search Results Container -->
     <div class="search-results">
         <!-- Search results will be loaded via AJAX -->
-    </div>
-
-    <!-- Cart Page -->
-    <div id="cart-page" class="page">
-        <div class="cart-content">
-            <h2>Shopping Cart</h2>
-            <div class="cart-items">
-                <!-- Cart items will be loaded here via JavaScript -->
-            </div>
-            <div class="cart-summary">
-                <div class="subtotal">
-                <span>Subtotal:</span>
-                <span class="amount">€0.00</span>
-            </div>
-            <button class="checkout-btn">Proceed to Checkout</button>
-            </div>
-        </div>
     </div>
 </main>
