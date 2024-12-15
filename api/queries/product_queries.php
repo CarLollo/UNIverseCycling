@@ -10,7 +10,7 @@ class ProductQueries {
 
     public function getNewArrivals($limit = 6) {
         $query = "
-            SELECT DISTINCT p.product_id, p.name, p.price, p.image_path 
+            SELECT DISTINCT p.product_id, p.name, p.description, p.price, p.image_path 
             FROM product p
             INNER JOIN product_tag pt ON p.product_id = pt.product_id
             INNER JOIN tag t ON pt.tag_id = t.tag_id
