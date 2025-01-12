@@ -3,6 +3,7 @@
     --background-color: #F4F5F7;
     --text-color: #697077;
     --border-color: #DFE1E6;
+    --title-color: #000000;
 }
 
 * {
@@ -39,6 +40,7 @@ header {
 .logo {
     flex: 1;
     text-align: center;
+    color: var(--primary-color);
 }
 
 .logo img {
@@ -947,4 +949,81 @@ main {
     color: #ddd;
     margin-bottom: 16px;
     display: block;
+}
+
+/* Create Account page */
+h2 {
+    color: var(--title-color);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #f8f9fa;
+    color: #007bff;
+    border: 1px solid #007bff;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e6ea;
+}
+
+.alternative {
+    margin-top: 20px;
+    text-align: center;
+    color: #555;
+    font-size: 14px;
+}
+
+.divider {
+    height: 1px;
+    background-color: #ddd;
+    margin: 20px 0;
 }

@@ -1,6 +1,6 @@
 <header>
     <div class="logo">
-        <img src="/UNIverseCycling/assets/logo.svg" alt="UNIverseCycling">
+        <h1>UNIverseCycling</h1>
     </div>
     <div class="search-container">
         <button class="search-icon">
