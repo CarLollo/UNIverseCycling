@@ -1,0 +1,131 @@
+:root {
+    --primary: #003D87;
+    --bg: #F4F5F7;
+    --text: #697077;
+    --border: #DFE1E6;
+}
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.app, .card, header, .tabs, .bottom-nav {
+    background: white;
+    position: relative;
+}
+
+.app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.btn, .search-icon, .close-search {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.card, .category-item, .product-card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card, .category-item, .product-info, .promo-banner, .cart-summary {
+    padding: 1rem;
+}
+
+header {
+    height: 72px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo img, .search-icon img, .bottom-nav img {
+    width: 24px;
+    height: 24px;
+}
+
+.search-container, .tabs, .bottom-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tabs a, .bottom-nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.tabs a.active, .bottom-nav a.active {
+    color: var(--primary);
+}
+
+.search-input, .search-results, .page {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 1000;
+}
+
+.search-input.active, .search-results.active, .page.active {
+    display: block;
+}
+
+.products-grid, .categories-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.25rem;
+    padding: 1.25rem;
+}
+
+.product-image, .category-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.product-image img, .category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info h3, .promo-banner h2, .section-header h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.product-info .description, .promo-banner p, .product-count {
+    color: var(--text);
+    font-size: 0.875rem;
+}
+
+.product-info .price, .cart-item-price, .cart-item-total {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text);
+}

@@ -31,12 +31,16 @@ class APIService {
         return this.request('/categories.php?action=getAll');
     }
 
+    static async getProductsByCategory(categoryId) {
+        return this.request(`/products.php?action=getByCategory=${categoryId}`);
+    }
+
     static async searchProducts(query) {
         return this.request(`/products.php?action=search&query=${encodeURIComponent(query)}`);
     }
 
     static async getProductDetails(productId) {
-        return this.request(`/products.php?action=getProduct&id=${productId}`);
+        return this.request(`/products.php?action=getProduct=${productId}`);
     }
 
     static async getCartItems() {

@@ -616,7 +616,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupNavigation();
     setupTabs();
     setupSearch();
-    loadNewArrivals();
     setupProductClick();
     initializeCartCount();
 });

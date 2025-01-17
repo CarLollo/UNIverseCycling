@@ -17,6 +17,6 @@ session_start();
         <?php include 'pages/bottom_nav.php'; ?>
     </div>
 
-    <script src="/UNIverseCycling/js/app2.js"></script>
+    <script type="module" src="/UNIverseCycling/js/app.js"></script>
 </body>
 </html>
