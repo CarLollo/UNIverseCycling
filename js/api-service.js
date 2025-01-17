@@ -5,6 +5,8 @@ class APIService {
     static async request(endpoint, options = {}) {
         try {
             const url = `${this.BASE_URL}${endpoint}`;
+            console.log('Making API request to:', url);
+            
             const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -16,7 +18,10 @@ class APIService {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return await response.json();
+            
+            const data = await response.json();
+            console.log('API Response:', data);
+            return data;
         } catch (error) {
             console.error('API Request Error:', error);
             throw error;
@@ -32,7 +37,7 @@ class APIService {
     }
 
     static async getProductsByCategory(categoryId) {
-        return this.request(`/products.php?action=getByCategory=${categoryId}`);
+        return this.request(`/products.php?action=getByCategory&category_id=${encodeURIComponent(categoryId)}`); 
     }
 
     static async searchProducts(query) {
@@ -40,7 +45,7 @@ class APIService {
     }
 
     static async getProductDetails(productId) {
-        return this.request(`/products.php?action=getProduct=${productId}`);
+        return this.request(`/products.php?action=getProduct&id=${productId}`);
     }
 
     static async getCartItems() {

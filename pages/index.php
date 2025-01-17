@@ -27,6 +27,6 @@ session_start();
         </main>
     </div>
 
-    <script src="/UNIverseCycling/js/app2.js"></script>
+    <script type="module" src="/UNIverseCycling/js/app.js"></script>
 </body>
 </html>
