@@ -53,6 +53,8 @@ try {
                 throw new Exception('Search query is required');
             }
             $products = $productQueries->searchProducts($query);
+            
+            header("Content-Type: application/json");
             sendJsonResponse($products);
             break;
 
