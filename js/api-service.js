@@ -33,7 +33,15 @@ class APIService {
     }
 
     static async getCategories() {
-        return this.request('/categories.php?action=getAll');
+        console.log('APIService: Richiesta categorie...');
+        try {
+            const data = await this.request('/categories.php?action=getAll');
+            console.log('APIService: Categorie ricevute:', data);
+            return data;
+        } catch (error) {
+            console.error('APIService: Errore nel recupero delle categorie:', error);
+            throw error;
+        }
     }
 
     static async getProductsByCategory(categoryId) {

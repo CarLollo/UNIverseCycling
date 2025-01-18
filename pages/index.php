@@ -30,18 +30,18 @@ session_start();
     <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
 </head>
 <body>
-    <!-- Loading Overlay -->
+    <!-- Loading Overlay
     <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white" style="z-index: 9999;">
         <div class="spinner-grow text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-    </div>
+    </div> -->
 
     <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
     <!-- Main App Container -->
-    <div class="app-container">
+    <div class="app-container" id="app">
         <?php include "pages/header.php"; ?>
         
         <main class="main-content">
@@ -59,39 +59,9 @@ session_start();
         ?>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Bootstrap Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- App Scripts -->
-    <script type="module" src="/UNIverseCycling/js/app.js"></script>
-    
-    <!-- Initial Loading Script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Hide loading overlay when page is fully loaded
-            const loadingOverlay = document.getElementById('loading-overlay');
-            if (loadingOverlay) {
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 300);
-            }
-        });
-    </script>
-
-    <!-- PWA Support -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/UNIverseCycling/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
+    <script type="module" src="/UNIverseCycling/js/products.js"></script>
 </body>
 </html>
