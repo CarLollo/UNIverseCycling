@@ -19,8 +19,8 @@ class CartManager {
         } catch (error) {
             console.error('Error loading cart items:', error);
             cartItemsContainer.innerHTML = `
-                <div class="empty-cart">
-                    <p>Error loading cart. Please try again later.</p>
+                <div class="text-center py-5">
+                    <p class="text-muted">Error loading cart. Please try again later.</p>
                 </div>
             `;
         }
@@ -71,14 +71,15 @@ class CartManager {
     }
 
     updateCartCount(count) {
-        const cartIcon = document.querySelector('.bottom-nav a[href="#cart"] i');
-        if (cartIcon) {
-            const badge = cartIcon.querySelector('.cart-badge') || document.createElement('span');
-            badge.className = 'cart-badge';
-            badge.textContent = count;
-            if (!badge.parentNode) {
-                cartIcon.appendChild(badge);
+        const cartLink = document.querySelector('.navbar .nav-link[href="#cart"]');
+        if (cartLink) {
+            let badge = cartLink.querySelector('.badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge rounded-pill bg-primary position-absolute top-0 end-0';
+                cartLink.appendChild(badge);
             }
+            badge.textContent = count;
             badge.style.display = count > 0 ? 'block' : 'none';
         }
     }
@@ -92,81 +93,91 @@ class CartManager {
             subtotal += total;
 
             cartHTML += `
-                <div class="cart-item" data-product-id="${item.product_id}">
-                    <img src="/UNIverseCycling/${item.image_path}" alt="${item.name}" class="cart-item-image">
-                    <div class="cart-item-details">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">€${item.price}</div>
-                        <div class="cart-item-quantity">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn minus">-</button>
-                                <span class="quantity">${item.quantity}</span>
-                                <button class="quantity-btn plus">+</button>
+                <div class="card mb-3 border-0" data-product-id="${item.product_id}">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="/UNIverseCycling/${item.image_path}" alt="${item.name}" 
+                                class="img-fluid rounded" style="object-fit: cover; height: 100%;">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body">
+                                <h5 class="card-title h6">${item.name}</h5>
+                                <p class="card-text mb-2">€${item.price}</p>
+                                <div class="input-group input-group-sm" style="max-width: 150px;">
+                                    <button class="btn btn-outline-secondary quantity-decrease" type="button">-</button>
+                                    <input type="number" class="form-control text-center quantity-input" 
+                                        value="${item.quantity}" min="1" aria-label="Quantity">
+                                    <button class="btn btn-outline-secondary quantity-increase" type="button">+</button>
+                                </div>
+                                <button class="btn btn-link text-danger p-0 mt-2 remove-item">Remove</button>
                             </div>
                         </div>
                     </div>
-                    <div class="cart-item-total">€${total.toFixed(2)}</div>
-                    <button class="remove-item">×</button>
                 </div>
             `;
         });
 
-        container.innerHTML = cartHTML;
-        this.updateCartSummary(subtotal);
+        // Aggiungi il subtotale
+        cartHTML += `
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Subtotal</h5>
+                        <span class="h5 mb-0">€${subtotal.toFixed(2)}</span>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-3">Proceed to Checkout</button>
+                </div>
+            </div>
+        `;
 
-        // Add event listeners for quantity controls and remove buttons
-        this.setupCartControls();
+        container.innerHTML = cartHTML;
     }
 
-    updateCartSummary(subtotal) {
-        const summaryAmount = document.querySelector('.cart-summary .amount');
-        if (summaryAmount) {
-            summaryAmount.textContent = `€${subtotal.toFixed(2)}`;
-        }
+    renderEmptyCart(container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-cart-x display-1 text-muted mb-4"></i>
+                <h3 class="h5 mb-3">Your cart is empty</h3>
+                <p class="text-muted mb-4">Add some items to your cart to continue shopping</p>
+                <a href="#" class="btn btn-primary" data-page="home">Continue Shopping</a>
+            </div>
+        `;
     }
 
     setupCartControls() {
-        // Setup quantity controls
-        document.querySelectorAll('.quantity-controls').forEach(control => {
-            const minusBtn = control.querySelector('.minus');
-            const plusBtn = control.querySelector('.plus');
-            const quantitySpan = control.querySelector('.quantity');
-            const cartItem = control.closest('.cart-item');
+        const cartItems = document.querySelectorAll('.card[data-product-id]');
+        
+        cartItems.forEach(item => {
+            const productId = item.dataset.productId;
+            const quantityInput = item.querySelector('.quantity-input');
+            const decreaseBtn = item.querySelector('.quantity-decrease');
+            const increaseBtn = item.querySelector('.quantity-increase');
+            const removeBtn = item.querySelector('.remove-item');
 
-            if (!cartItem) {
-                console.warn('Cart item not found for control:', control);
-                return; // Salta se cartItem è null
+            if (decreaseBtn && increaseBtn && quantityInput) {
+                decreaseBtn.addEventListener('click', () => {
+                    const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
+                    if (newQuantity !== parseInt(quantityInput.value)) {
+                        this.updateCartItemQuantity(productId, newQuantity);
+                    }
+                });
+
+                increaseBtn.addEventListener('click', () => {
+                    const newQuantity = parseInt(quantityInput.value) + 1;
+                    this.updateCartItemQuantity(productId, newQuantity);
+                });
+
+                quantityInput.addEventListener('change', () => {
+                    const newQuantity = Math.max(1, parseInt(quantityInput.value));
+                    this.updateCartItemQuantity(productId, newQuantity);
+                });
             }
 
-            const productId = cartItem.dataset.productId;
-
-            minusBtn.addEventListener('click', async () => {
-                let quantity = parseInt(quantitySpan.textContent);
-                if (quantity > 1) {
-                    await this.updateCartItemQuantity(productId, quantity - 1);
-                }
-            });
-
-            plusBtn.addEventListener('click', async () => {
-                let quantity = parseInt(quantitySpan.textContent);
-                await this.updateCartItemQuantity(productId, quantity + 1);
-            });
-        });
-
-        // Setup remove buttons
-        document.querySelectorAll('.remove-item').forEach(button => {
-            const cartItem = button.closest('.cart-item');
-
-            if (!cartItem) {
-                console.warn('Cart item not found for button:', button);
-                return; // Salta se cartItem è null
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    this.removeFromCart(productId);
+                });
             }
-
-            const productId = cartItem.dataset.productId;
-
-            button.addEventListener('click', async () => {
-                await this.removeFromCart(productId);
-            });
         });
     }
 }

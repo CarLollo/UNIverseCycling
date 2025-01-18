@@ -1,0 +1,241 @@
+/* Theme Colors */
+:root {
+    --primary-color: #003D87;
+    --secondary-color: #E5E5E5;
+    --accent-color: #FF4B4B;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+}
+
+/* Global */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #FFFFFF;
+    padding-bottom: 60px; /* Space for bottom navigation */
+}
+
+/* Navigation */
+.nav-container {
+    background: white;
+}
+
+.nav-tabs {
+    border: none;
+    padding: 0 1rem;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+    padding: 0.75rem 0;
+    margin: 0 1rem;
+    border: none;
+    position: relative;
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    font-weight: 500;
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Promo Banner */
+.promo-banner {
+    background: linear-gradient(45deg, var(--primary-color), #0056BC);
+}
+
+/* Products Grid */
+.products-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.product-image-wrapper {
+    position: relative;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    background: #f8f9fa;
+    overflow: hidden;
+}
+
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    background: white;
+}
+
+.product-title {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.product-price {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Category Cards */
+.category-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+}
+
+.category-image-wrapper {
+    position: relative;
+    padding-top: 75%; /* 4:3 Aspect Ratio */
+    background: #f8f9fa;
+    overflow: hidden;
+}
+
+.category-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Search Bar */
+.search-wrapper {
+    position: relative;
+    max-width: 300px;
+    width: 100%;
+}
+
+.search-input {
+    padding-left: 2.5rem;
+    border-radius: 100px;
+    border: none;
+    background-color: #F0F0F0;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* Bottom Navigation */
+.navbar.fixed-bottom {
+    padding: 0;
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navbar .nav-link {
+    color: var(--text-secondary);
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.navbar .nav-link.active {
+    color: var(--primary-color);
+}
+
+.navbar .bi {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.navbar .small {
+    font-size: 0.75rem;
+    display: block;
+    line-height: 1;
+}
+
+.nav-icon-container {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+}
+
+.toast {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+}

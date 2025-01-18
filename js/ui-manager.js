@@ -17,18 +17,42 @@ class UIManager {
     loadInitialData() {
         // Usa DataLoader per caricare i nuovi arrivi
         this.dataLoader.loadNewArrivals().then(html => {
-            const productsGrid = document.querySelector('.home-page .products-grid');
-            if (productsGrid) {
-                productsGrid.innerHTML = html;
+            const newArrivalsContainer = document.getElementById('newArrivalsContainer');
+            if (newArrivalsContainer) {
+                newArrivalsContainer.innerHTML = html;
+            } else {
+                console.error('New arrivals container not found');
+            }
+        }).catch(error => {
+            console.error('Error loading new arrivals:', error);
+            const newArrivalsContainer = document.getElementById('newArrivalsContainer');
+            if (newArrivalsContainer) {
+                newArrivalsContainer.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>Error loading new arrivals. Please try again later.</div>
+                    </div>
+                `;
             }
         });
 
         // Usa DataLoader per caricare le categorie
         this.dataLoader.loadCategories().then(html => {
-            const categoriesList = document.querySelector('.categories-page .categories-list');
-            if (categoriesList) {
-                categoriesList.innerHTML = html;
+            const categoriesGrid = document.querySelector('.categories-grid');
+            if (categoriesGrid) {
+                categoriesGrid.innerHTML = html;
                 this.setupCategoryNavigation();
+            }
+        }).catch(error => {
+            console.error('Error loading categories:', error);
+            const categoriesGrid = document.querySelector('.categories-grid');
+            if (categoriesGrid) {
+                categoriesGrid.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>Error loading categories. Please try again later.</div>
+                    </div>
+                `;
             }
         });
     }
@@ -78,7 +102,7 @@ class UIManager {
 
 
     setupNavigation() {
-        const navLinks = document.querySelectorAll('.bottom-nav a');
+        const navLinks = document.querySelectorAll('.navbar .nav-link');
         const pages = document.querySelectorAll('.page');
 
         navLinks.forEach(link => {
@@ -102,22 +126,36 @@ class UIManager {
                     document.querySelector('.tabs').style.display = 'flex';
                 }
 
-                document.querySelector(`.${targetPage}-page`).classList.add('active');
+                // Attiva la pagina corrispondente
+                const activePage = document.querySelector(`.${targetPage}-page`);
+                if (activePage) {
+                    activePage.classList.add('active');
+                }
             });
         });
     }
 
     setupTabs() {
-        const tabLinks = document.querySelectorAll('.tabs a');
+        const tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
         const tabIndicator = document.querySelector('.tab-indicator');
         const pages = document.querySelectorAll('.page');
 
+        const updateIndicator = (activeTab) => {
+            if (tabIndicator && activeTab) {
+                tabIndicator.style.width = `${activeTab.offsetWidth}px`;
+                tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+            }
+        };
+
         // Set initial indicator position
-        const activeTab = document.querySelector('.tabs a.active');
-        if (activeTab) {
-            tabIndicator.style.width = `${activeTab.offsetWidth}px`;
-            tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
-        }
+        const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+        updateIndicator(activeTab);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const currentActiveTab = document.querySelector('.nav-tabs .nav-link.active');
+            updateIndicator(currentActiveTab);
+        });
 
         tabLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -128,15 +166,18 @@ class UIManager {
                 link.classList.add('active');
 
                 // Move indicator
-                tabIndicator.style.width = `${link.offsetWidth}px`;
-                tabIndicator.style.transform = `translateX(${link.offsetLeft}px)`;
+                updateIndicator(link);
 
-                // Show corresponding page
+                // Show corresponding page with fade effect
                 const targetPage = link.getAttribute('data-page');
                 pages.forEach(page => {
-                    page.classList.remove('active');
                     if (page.classList.contains(`${targetPage}-page`)) {
-                        page.classList.add('active');
+                        // First remove active class from all pages
+                        pages.forEach(p => p.classList.remove('active'));
+                        // Then add active class to target page after a short delay
+                        setTimeout(() => {
+                            page.classList.add('active');
+                        }, 50);
                     }
                 });
             });
@@ -147,24 +188,28 @@ class UIManager {
         const searchIcon = document.querySelector('.search-icon');
         const searchInput = document.querySelector('.search-input');
         const closeSearch = document.querySelector('.close-search');
-        const searchField = searchInput ? searchInput.querySelector('input') : null;
+        const searchField = searchInput ? searchInput.querySelector('input.form-control') : null;
         const searchResults = document.querySelector('.search-results');
         const pages = document.querySelectorAll('.page');
         const homePage = document.querySelector('.home-page');
         const tabs = document.querySelector('.tabs');
 
         if (searchIcon && searchInput && closeSearch && searchField) {
+            // Gestione apertura ricerca
             searchIcon.addEventListener('click', () => {
                 searchInput.classList.add('active');
                 searchField.focus();
                 searchIcon.style.visibility = 'hidden';
             });
 
+            // Gestione chiusura ricerca
             const hideSearch = () => {
                 searchInput.classList.remove('active');
                 searchField.value = '';
                 searchIcon.style.visibility = 'visible';
-                searchResults.classList.remove('active');
+                if (searchResults) {
+                    searchResults.classList.remove('active');
+                }
                 pages.forEach(page => page.classList.remove('active'));
                 homePage.classList.add('active');
                 tabs.style.display = '';
@@ -172,13 +217,16 @@ class UIManager {
 
             closeSearch.addEventListener('click', hideSearch);
 
+            // Gestione input di ricerca
             let searchTimeout;
             searchField.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
                 const query = e.target.value.trim();
 
                 if (query.length < 2) {
-                    searchResults.classList.remove('active');
+                    if (searchResults) {
+                        searchResults.classList.remove('active');
+                    }
                     return;
                 }
 
@@ -196,22 +244,10 @@ class UIManager {
                     } catch (error) {
                         console.error('Search error:', error);
                         if (searchResults) {
-                            searchResults.classList.add('active');
-                            searchResults.innerHTML = '<p class="no-results">Error performing search. Please try again.</p>';
+                            searchResults.innerHTML = '<p class="text-center py-3">Error loading search results. Please try again.</p>';
                         }
                     }
                 }, 300);
-            });
-
-            searchField.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    clearTimeout(searchTimeout);
-                    const query = searchField.value.trim();
-                    if (query.length >= 2) {
-                        searchField.dispatchEvent(new Event('input'));
-                    }
-                }
             });
         }
     }
