@@ -112,18 +112,28 @@ class ProductsManager {
     }
 
     showProductDetails(product) {
-        // Nascondi la griglia dei prodotti
-        const productsGrid = document.querySelector('.products-container');
-        if (productsGrid) {
-            productsGrid.style.display = 'none';
-        }
+        // Nascondi tutti i container
+        const containersToHide = [
+            '.products-container',
+            '.categories-container',
+            '.category-products-container',
+            '.promo-banner',
+            '.section'
+        ];
+        
+        containersToHide.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
 
         // Crea o aggiorna il container dei dettagli
         let detailsContainer = document.querySelector('.product-details');
         if (!detailsContainer) {
             detailsContainer = document.createElement('div');
             detailsContainer.className = 'product-details';
-            productsGrid?.parentNode.appendChild(detailsContainer);
+            document.querySelector('.container').appendChild(detailsContainer);
         }
 
         // Renderizza i dettagli
@@ -218,20 +228,44 @@ class ProductsManager {
     }
 
     showProductsList() {
-        // Nascondi i dettagli
+        // Nascondi i dettagli del prodotto
         const detailsContainer = document.querySelector('.product-details');
         if (detailsContainer) {
             detailsContainer.style.display = 'none';
         }
 
-        // Mostra la griglia
-        const productsGrid = document.querySelector('.products-container');
-        if (productsGrid) {
-            productsGrid.style.display = 'block';
-        }
+        // Se siamo nella vista categorie, torna alle categorie
+        const categoriesContainer = document.querySelector('.categories-container');
+        if (categoriesContainer && categoriesContainer.innerHTML) {
+            // Mostra le categorie
+            categoriesContainer.style.display = 'block';
+            // Attiva il tab delle categorie
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const categoriesTab = document.querySelector('a[data-page="categories"]');
+            if (categoriesTab) categoriesTab.classList.add('active');
+        } else {
+            // Altrimenti torna alla home
+            const homeElements = document.querySelectorAll('.promo-banner, .section');
+            homeElements.forEach(el => {
+                if (el) el.style.display = 'block';
+            });
+            
+            // Ricarica i new arrivals
+            const productsContainer = document.querySelector('.products-container');
+            if (productsContainer) {
+                productsContainer.style.display = 'block';
+                this.loadNewArrivals(); // Ricarica i prodotti
+            }
 
-        // Aggiorna URL
-        history.pushState({}, '', window.location.pathname);
+            // Attiva il tab home
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const homeTab = document.querySelector('a[data-page="home"]');
+            if (homeTab) homeTab.classList.add('active');
+        }
     }
 
     updateURL(productId) {

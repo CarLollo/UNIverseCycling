@@ -20,7 +20,7 @@ class CategoriesManager {
         // Aggiungi event listener per il tab home
         const homeTab = document.querySelector('a[data-page="home"]');
         if (homeTab) {
-            homeTab.addEventListener('click', (e) => {
+            homeTab.addEventListener('click', async (e) => {
                 e.preventDefault();
                 
                 // Mostra tutti gli elementi della home
@@ -29,11 +29,23 @@ class CategoriesManager {
                     if (el) el.style.display = 'block';
                 });
 
-                // Nascondi le sezioni delle categorie
+                // Nascondi le sezioni delle categorie e prodotti
                 const categoriesContainer = document.querySelector('.categories-container');
                 const categoryProductsContainer = document.querySelector('.category-products-container');
+                const productDetails = document.querySelector('.product-details');
                 if (categoriesContainer) categoriesContainer.style.display = 'none';
                 if (categoryProductsContainer) categoryProductsContainer.style.display = 'none';
+                if (productDetails) productDetails.style.display = 'none';
+
+                // Mostra e ricarica i new arrivals
+                const productsContainer = document.querySelector('.products-container');
+                if (productsContainer) {
+                    productsContainer.style.display = 'block';
+                    // Ricarica i new arrivals usando productsManager
+                    if (window.productsManager) {
+                        await window.productsManager.loadNewArrivals();
+                    }
+                }
 
                 // Attiva il tab home
                 document.querySelectorAll('.nav-link').forEach(link => {
