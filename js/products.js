@@ -99,10 +99,10 @@ class ProductsManager {
             }
             
             // Mostra i dettagli
-            this.showProductDetails(product);
+            await this.showProductDetails(productId);
             
             // Aggiorna URL
-            this.updateURL(productId);
+            // this.updateURL(productId);
         } catch (error) {
             console.error('Error handling product click:', error);
             this.showError('Error loading product details. Please try again later.');
@@ -111,103 +111,125 @@ class ProductsManager {
         }
     }
 
-    showProductDetails(product) {
-        // Nascondi tutti i container
-        const containersToHide = [
-            '.products-container',
-            '.categories-container',
-            '.category-products-container',
-            '.promo-banner',
-            '.section'
-        ];
-        
-        containersToHide.forEach(selector => {
-            const element = document.querySelector(selector);
-            if (element) {
-                element.style.display = 'none';
+    async showProductDetails(productId, updateHistory = true) {
+        try {
+            let product = this.products.get(productId);
+            if (!product) {
+                product = await APIService.getProductDetails(productId);
+                this.products.set(productId, product);
             }
-        });
 
-        // Crea o aggiorna il container dei dettagli
-        let detailsContainer = document.querySelector('.product-details');
-        if (!detailsContainer) {
-            detailsContainer = document.createElement('div');
-            detailsContainer.className = 'product-details';
-            document.querySelector('.container').appendChild(detailsContainer);
+            if (updateHistory) {
+                const currentParams = new URLSearchParams(window.location.search);
+                const searchQuery = currentParams.get('query');
+                
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('action', 'product');
+                newUrl.searchParams.set('id', productId);
+                if (searchQuery) {
+                    newUrl.searchParams.set('query', searchQuery);
+                }
+                
+                history.pushState({ 
+                    action: 'product', 
+                    productId: productId,
+                    previousQuery: searchQuery 
+                }, '', newUrl.toString());
+            }
+
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.innerHTML = this.renderProductDetails(product);
+            }
+        } catch (error) {
+            console.error('Error loading product details:', error);
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="container mt-4">
+                        <div class="alert alert-danger">Error loading product details. Please try again.</div>
+                    </div>
+                `;
+            }
         }
+    }
 
-        // Renderizza i dettagli
-        detailsContainer.innerHTML = `
-            <div class="container py-4">
+    renderProductDetails(product) {
+        const imagePath = product.image_path.startsWith('/') 
+            ? `/UNIverseCycling${product.image_path}`
+            : `/UNIverseCycling/${product.image_path}`;
+
+        // Determina se siamo arrivati da una ricerca
+        const params = new URLSearchParams(window.location.search);
+        const searchQuery = params.get('query');
+        
+        // Prepara il link back
+        const backLink = searchQuery 
+            ? `${window.location.pathname}?action=search&query=${encodeURIComponent(searchQuery)}`
+            : window.location.pathname;
+        
+        const backText = searchQuery ? 'Back to Search Results' : 'Back to Home';
+
+        return `
+            <div class="container mt-4">
                 <div class="d-flex align-items-center mb-4">
-                    <button class="btn btn-link text-decoration-none p-0 me-3 text-primary" onclick="window.productsManager.showProductsList()">
+                    <a href="${backLink}" class="btn btn-link text-decoration-none p-0 me-3 text-primary">
                         <i class="bi bi-arrow-left h5 mb-0"></i>
-                        <span class="ms-2">Back</span>
-                    </button>
-                    <h1 class="h4 mb-0">${product.name}</h1>
+                        <span class="ms-2">${backText}</span>
+                    </a>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-6 mb-4 mb-md-0">
-                        <img src="${product.image_path}" 
+                        <img src="${imagePath}" 
                              class="img-fluid rounded shadow-sm" 
                              alt="${product.name}"
                              onerror="this.src='/UNIverseCycling/assets/images/placeholder.jpg'">
                     </div>
+                    
                     <div class="col-md-6">
+                        <h1 class="h2 mb-3">${product.name}</h1>
+                        <p class="h3 text-primary mb-4">€${parseFloat(product.price).toFixed(2)}</p>
+                        
                         <div class="mb-4">
-                            <h2 class="h5 mb-3">Description</h2>
+                            <h5 class="mb-3">Description</h5>
                             <p class="text-muted">${product.description || 'No description available.'}</p>
                         </div>
-
+                        
                         <div class="mb-4">
-                            <h3 class="h5 mb-3">Color</h3>
+                            <h5 class="mb-3">Color</h5>
                             <div class="d-flex gap-2">
-                                <button class="color-circle bg-danger rounded-circle border-0" 
-                                        style="width: 30px; height: 30px; cursor: pointer; outline: 2px solid var(--primary-color); outline-offset: 2px;" 
+                                <button class="btn btn-outline-danger rounded-circle p-2 ${this.selectedColor === 'red' ? 'active' : ''}"
                                         onclick="window.productsManager.selectColor('red')"
-                                        title="Red"></button>
-                                <button class="color-circle bg-primary rounded-circle border-0" 
-                                        style="width: 30px; height: 30px; cursor: pointer;" 
+                                        style="width: 40px; height: 40px;">
+                                </button>
+                                <button class="btn btn-outline-primary rounded-circle p-2 ${this.selectedColor === 'blue' ? 'active' : ''}"
                                         onclick="window.productsManager.selectColor('blue')"
-                                        title="Blue"></button>
-                                <button class="color-circle bg-success rounded-circle border-0" 
-                                        style="width: 30px; height: 30px; cursor: pointer;" 
+                                        style="width: 40px; height: 40px;">
+                                </button>
+                                <button class="btn btn-outline-success rounded-circle p-2 ${this.selectedColor === 'green' ? 'active' : ''}"
                                         onclick="window.productsManager.selectColor('green')"
-                                        title="Green"></button>
-                                <button class="color-circle bg-info rounded-circle border-0" 
-                                        style="width: 30px; height: 30px; cursor: pointer;" 
+                                        style="width: 40px; height: 40px;">
+                                </button>
+                                <button class="btn btn-outline-info rounded-circle p-2 ${this.selectedColor === 'cyan' ? 'active' : ''}"
                                         onclick="window.productsManager.selectColor('cyan')"
-                                        title="Cyan"></button>
+                                        style="width: 40px; height: 40px;">
+                                </button>
                             </div>
                         </div>
-
-                        <div class="mb-4">
-                            <p class="text-muted mb-1">Available: ${product.stock || 10}</p>
-                            <h4 class="h3 mb-3">€${parseFloat(product.price).toFixed(2)}</h4>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg">
+                                Add to Cart
+                            </button>
+                            <button class="btn btn-outline-primary btn-lg">
+                                Add to Wishlist
+                            </button>
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Quantity:</label>
-                            <div class="input-group" style="width: 140px;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="this.nextElementSibling.stepDown()">-</button>
-                                <input type="number" class="form-control text-center" value="1" min="1" max="${product.stock || 10}" style="border-color: var(--primary-color);">
-                                <button class="btn btn-outline-secondary" type="button" onclick="this.previousElementSibling.stepUp()">+</button>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary w-100 py-2" onclick="window.productsManager.addToCart('${product.product_id}')">
-                            <i class="bi bi-cart-plus me-2"></i>Add to cart
-                        </button>
                     </div>
                 </div>
             </div>
         `;
-        
-        detailsContainer.style.display = 'block';
-        
-        // Seleziona il primo colore automaticamente
-        this.selectedColor = 'red';
     }
 
     selectColor(color) {

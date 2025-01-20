@@ -8,67 +8,138 @@ class SearchManager {
     }
 
     init() {
-        // Trova l'input di ricerca
+        // Controlla se c'è una query di ricerca nell'URL all'avvio
+        const params = new URLSearchParams(window.location.search);
+        const initialQuery = params.get('query');
         const searchInput = document.querySelector('.search-input');
+        
         if (searchInput) {
+            // Se c'è una query iniziale, esegui la ricerca
+            if (initialQuery && params.get('action') === 'search') {
+                searchInput.value = initialQuery;
+                this.performSearch(initialQuery);
+            }
+
             searchInput.addEventListener('input', (e) => {
-                // Cancella il timeout precedente
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }
 
-                // Imposta un nuovo timeout per evitare troppe richieste
+                const query = e.target.value.trim();
+                
+                // Se il campo è vuoto o contiene solo spazi
+                if (query.length === 0) {
+                    this.clearSearchAndReturnHome();
+                    return;
+                }
+
                 this.searchTimeout = setTimeout(() => {
-                    const query = e.target.value.trim();
                     if (query.length >= 3) {
                         this.performSearch(query);
                     } else {
-                        this.clearResults();
+                        // Se la query è troppo corta, torna alla home
+                        this.clearSearchAndReturnHome();
                     }
                 }, 300);
             });
 
-            // Gestisci il tasto Invio
+            // Gestisci il tasto X del campo di ricerca
+            const clearButton = searchInput.parentElement.querySelector('.clear-search');
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    searchInput.value = '';
+                    this.clearSearchAndReturnHome();
+                });
+            }
+
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     const query = e.target.value.trim();
-                    if (query) {
-                        const newUrl = `${window.location.origin}${window.location.pathname}?action=search&query=${encodeURIComponent(query)}`;
-                        history.pushState(null, '', newUrl);
-                        if (query.length >= 3) {
-                            this.performSearch(query);
-                        }
+                    if (query.length === 0) {
+                        this.clearSearchAndReturnHome();
+                    } else if (query.length >= 3) {
+                        this.performSearch(query);
                     } else {
-                        console.log('Il campo di ricerca è vuoto.');
+                        // Se la query è troppo corta, mostra un messaggio
+                        const mainContent = document.querySelector('.main-content');
+                        if (mainContent) {
+                            mainContent.innerHTML = `
+                                <div class="container mt-4">
+                                    <div class="alert alert-warning">
+                                        Please enter at least 3 characters to search.
+                                    </div>
+                                </div>
+                            `;
+                        }
                     }
                 }
             });
-
-            // Chiudi i risultati quando si clicca fuori
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container')) {
-                    this.clearResults();
-                }
-            });
         }
+
+        // Gestisci la navigazione
+        window.addEventListener('popstate', (event) => {
+            const state = event.state;
+            const params = new URLSearchParams(window.location.search);
+            
+            // Aggiorna l'input di ricerca
+            if (searchInput) {
+                searchInput.value = params.get('query') || '';
+            }
+
+            if (state && state.action === 'search') {
+                this.performSearch(state.query, false);
+            } else if (state && state.action === 'product') {
+                window.productsManager.showProductDetails(state.productId, false);
+            } else {
+                this.clearSearchAndReturnHome();
+            }
+        });
+
+        // Chiudi i risultati quando si clicca fuori
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                this.clearResults();
+            }
+        });
     }
 
-    async performSearch(query) {
+    async performSearch(query, updateHistory = true) {
         console.log(`Sto cercando: ${query}`);
         try {
-            // Mostra il loading
-            this.showLoading();
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="container mt-4 text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+            }
 
-            // Esegui la ricerca
             const results = await APIService.searchProducts(query);
 
-            // Mostra i risultati
+            if (results && results.length > 0) {
+                results.forEach(product => {
+                    window.productsManager.products.set(product.product_id, product);
+                });
+            }
+
+            if (updateHistory) {
+                const newUrl = `${window.location.pathname}?action=search&query=${encodeURIComponent(query)}`;
+                history.pushState({ action: 'search', query: query }, '', newUrl);
+            }
+
             this.displayResults(results);
         } catch (error) {
             console.error('Error searching products:', error);
-            this.showError('Error searching products. Please try again.');
-        } finally {
-            this.hideLoading();
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="container mt-4">
+                        <div class="alert alert-danger">Error searching products. Please try again.</div>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -76,6 +147,11 @@ class SearchManager {
         // Get the main content container
         const mainContent = document.querySelector('.main-content');
         if (!mainContent) return;
+
+        // Clear ALL content
+        document.querySelectorAll('.product-details, .products-container, .categories-container, .category-products-container, .promo-banner, .section').forEach(el => {
+            if (el) el.remove();
+        });
 
         // Clear the main content
         mainContent.innerHTML = '';
@@ -93,6 +169,7 @@ class SearchManager {
         // Create container for search results
         mainContent.innerHTML = `
             <div class="container mt-4">
+                <h2 class="mb-4">Search Results</h2>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
                     ${results.map(product => window.productsManager.renderProductCard(product)).join('')}
                 </div>
@@ -101,31 +178,46 @@ class SearchManager {
     }
 
     clearResults() {
-        const resultsContainer = document.querySelector('.search-results');
-        if (resultsContainer) {
-            resultsContainer.innerHTML = '';
+        // Clear any existing search results
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            // Restore the original content
+            window.productsManager.loadNewArrivals();
         }
+    }
+
+    clearSearchAndReturnHome() {
+        // Pulisci l'input di ricerca
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        // Aggiorna l'URL rimuovendo i parametri di ricerca
+        const newUrl = window.location.pathname;
+        history.pushState({ action: 'home' }, '', newUrl);
+
+        // Torna alla home
+        window.productsManager.loadNewArrivals();
     }
 
     showLoading() {
-        let resultsContainer = document.querySelector('.search-results');
-        if (!resultsContainer) {
-            resultsContainer = document.createElement('div');
-            resultsContainer.className = 'search-results';
-            document.querySelector('.search-container').appendChild(resultsContainer);
+        const searchContainer = document.querySelector('.search-container');
+        let loadingEl = document.querySelector('.search-loading');
+        if (!loadingEl) {
+            loadingEl = document.createElement('div');
+            loadingEl.className = 'search-loading';
+            loadingEl.style.display = 'none';
+            searchContainer.appendChild(loadingEl);
         }
-
-        resultsContainer.innerHTML = `
-            <div class="text-center p-3">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
+        loadingEl.style.display = 'block';
     }
 
     hideLoading() {
-        // Il loading verrà nascosto quando si mostrano i risultati
+        const loadingEl = document.querySelector('.search-loading');
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
     }
 
     showError(message) {
