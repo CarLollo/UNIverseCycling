@@ -9,21 +9,21 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="UNIverseCycling - Your premier destination for cycling gear and accessories">
     <meta name="theme-color" content="#003D87">
-    
+
     <title><?php echo isset($templateParams["titolo"]) ? $templateParams["titolo"] : 'UNIverseCycling'; ?></title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/UNIverseCycling/assets/favicon.png">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/UNIverseCycling/css/custom-bootstrap.css">
-    
+
     <!-- Preload key resources -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -43,7 +43,7 @@ session_start();
     <!-- Main App Container -->
     <div class="app-container" id="app">
         <?php include "pages/header.php"; ?>
-        
+
         <main class="main-content">
             <?php
             if(isset($templateParams["nome"])){
@@ -51,7 +51,7 @@ session_start();
             }
             ?>
         </main>
-        
+
         <?php
         if(isset($templateParams["navbar"])) {
             require($templateParams["navbar"]);
@@ -62,6 +62,16 @@ session_start();
     <!-- Bootstrap Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="/UNIverseCycling/js/products.js"></script>
+
+    <!-- Permette di specificare i file js che servono alla pagina -->
+    <?php
+    if(isset($templateParams["js"])):
+        foreach($templateParams["js"] as $script):
+    ?>
+        <script src="<?php echo $script; ?>"></script>
+    <?php
+        endforeach;
+    endif;
+    ?>
 </body>
 </html>

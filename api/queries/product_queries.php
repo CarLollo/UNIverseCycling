@@ -10,7 +10,7 @@ class ProductQueries {
 
     public function getNewArrivals($limit = 6) {
         $query = "
-            SELECT DISTINCT p.product_id, p.name, p.description, p.price, p.image_path 
+            SELECT DISTINCT p.product_id, p.name, p.description, p.price, p.image_path
             FROM product p
             INNER JOIN product_tag pt ON p.product_id = pt.product_id
             INNER JOIN tag t ON pt.tag_id = t.tag_id
@@ -43,14 +43,14 @@ class ProductQueries {
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $this->mysqli->error);
             }
-            
+
             $stmt->bind_param("i", $categoryId);
             $stmt->execute();
-            
+
             if ($stmt->error) {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
-            
+
             $result = $stmt->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         } catch (Exception $e) {
@@ -90,10 +90,10 @@ class ProductQueries {
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $this->mysqli->error);
             }
-            
+
             $stmt->bind_param("i", $productId);
             $stmt->execute();
-            
+
             if ($stmt->error) {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
@@ -107,16 +107,16 @@ class ProductQueries {
     }
 
     public function getCartItems($userEmail) {
-        $query = "SELECT c.product_id, c.quantity, p.name, p.price, p.image_path 
-                 FROM cart c 
-                 JOIN product p ON c.product_id = p.product_id 
+        $query = "SELECT c.product_id, c.quantity, p.name, p.price, p.image_path
+                 FROM cart c
+                 JOIN product p ON c.product_id = p.product_id
                  WHERE c.email = ?";
-        
+
         try {
             $stmt = $this->mysqli->prepare($query);
             $stmt->bind_param("s", $userEmail);
             $stmt->execute();
-            
+
             $result = $stmt->get_result();
             return $result->fetch_all(MYSQLI_ASSOC);
         } catch (Exception $e) {
@@ -155,10 +155,10 @@ class ProductQueries {
             $stmt = $this->mysqli->prepare($query);
             $stmt->bind_param("s", $userEmail);
             $stmt->execute();
-            
+
             $result = $stmt->get_result();
             $row = $result->fetch_assoc();
-            
+
             return $row['count'] ?? 0;
         } catch (Exception $e) {
             error_log("Error in getCartCount: " . $e->getMessage());
@@ -169,7 +169,7 @@ class ProductQueries {
     public function addToCart($userEmail, $productId, $quantity = 1) {
         // Check if item already exists in cart
         $checkQuery = "SELECT quantity FROM cart WHERE email = ? AND product_id = ?";
-        
+
         try {
             $stmt = $this->mysqli->prepare($checkQuery);
             $stmt->bind_param("si", $userEmail, $productId);
@@ -180,7 +180,7 @@ class ProductQueries {
                 // Update existing quantity
                 $row = $result->fetch_assoc();
                 $newQuantity = $row['quantity'] + $quantity;
-                
+
                 $updateQuery = "UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?";
                 $stmt = $this->mysqli->prepare($updateQuery);
                 $stmt->bind_param("isi", $newQuantity, $userEmail, $productId);

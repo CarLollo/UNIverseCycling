@@ -5,8 +5,10 @@
             <h1 class="h5 mb-0 text-primary">UNIverseCycling</h1>
         </a>
         <div class="search-wrapper position-relative">
-            <input type="search" class="form-control search-input" placeholder="Search products..." aria-label="Search">
-            <i class="bi bi-search search-icon"></i>
+            <div class="search-container">
+                <input type="search" class="form-control search-input" placeholder="Search products..." aria-label="Search">
+                <i class="bi bi-search search-icon"></i>
+            </div>
         </div>
     </div>
 </header>

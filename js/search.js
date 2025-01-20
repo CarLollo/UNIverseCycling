@@ -30,8 +30,14 @@ class SearchManager {
             searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     const query = e.target.value.trim();
-                    if (query.length >= 3) {
-                        this.performSearch(query);
+                    if (query) {
+                        const newUrl = `${window.location.origin}${window.location.pathname}?action=search&query=${encodeURIComponent(query)}`;
+                        history.pushState(null, '', newUrl);
+                        if (query.length >= 3) {
+                            this.performSearch(query);
+                        }
+                    } else {
+                        console.log('Il campo di ricerca è vuoto.');
                     }
                 }
             });
@@ -46,6 +52,7 @@ class SearchManager {
     }
 
     async performSearch(query) {
+        console.log(`Sto cercando: ${query}`);
         try {
             // Mostra il loading
             this.showLoading();
@@ -56,7 +63,10 @@ class SearchManager {
                 throw new Error('Network response was not ok');
             }
             const results = await response.json();
-            
+
+            console.log("Ecco results:");
+            console.log(results);
+
             // Mostra i risultati
             this.displayResults(results);
         } catch (error) {
@@ -92,8 +102,8 @@ class SearchManager {
                 ${results.map(product => `
                     <div class="search-result-item p-2" onclick="window.productsManager.showProductDetails(${product.id})">
                         <div class="d-flex align-items-center">
-                            <img src="${product.image_path}" 
-                                 class="search-result-image me-2" 
+                            <img src="${product.image_path}"
+                                 class="search-result-image me-2"
                                  alt="${product.name}"
                                  onerror="this.src='/UNIverseCycling/assets/images/placeholder.jpg'">
                             <div class="search-result-info">
@@ -141,14 +151,14 @@ class SearchManager {
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'assertive');
         toast.setAttribute('aria-atomic', 'true');
-        
+
         toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">${message}</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
-        
+
         const container = document.querySelector('.toast-container');
         if (container) {
             container.appendChild(toast);
