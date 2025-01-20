@@ -113,6 +113,7 @@ class ProductsManager {
 
     async showProductDetails(productId, updateHistory = true) {
         try {
+            console.log('Showing product details:', productId);
             let product = this.products.get(productId);
             if (!product) {
                 product = await APIService.getProductDetails(productId);
@@ -195,37 +196,45 @@ class ProductsManager {
                             <h5 class="mb-3">Description</h5>
                             <p class="text-muted">${product.description || 'No description available.'}</p>
                         </div>
+
+                        <div class="mb-4">
+                            <p class="text-muted mb-2">Available: ${product.stock || 10}</p>
+                        </div>
                         
                         <div class="mb-4">
                             <h5 class="mb-3">Color</h5>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-outline-danger rounded-circle p-2 ${this.selectedColor === 'red' ? 'active' : ''}"
+                                <button class="color-circle bg-danger rounded-circle border-0" 
+                                        style="width: 30px; height: 30px; cursor: pointer; ${this.selectedColor === 'red' ? 'outline: 2px solid var(--primary-color); outline-offset: 2px;' : ''}" 
                                         onclick="window.productsManager.selectColor('red')"
-                                        style="width: 40px; height: 40px;">
-                                </button>
-                                <button class="btn btn-outline-primary rounded-circle p-2 ${this.selectedColor === 'blue' ? 'active' : ''}"
+                                        title="Red"></button>
+                                <button class="color-circle bg-primary rounded-circle border-0" 
+                                        style="width: 30px; height: 30px; cursor: pointer; ${this.selectedColor === 'blue' ? 'outline: 2px solid var(--primary-color); outline-offset: 2px;' : ''}" 
                                         onclick="window.productsManager.selectColor('blue')"
-                                        style="width: 40px; height: 40px;">
-                                </button>
-                                <button class="btn btn-outline-success rounded-circle p-2 ${this.selectedColor === 'green' ? 'active' : ''}"
+                                        title="Blue"></button>
+                                <button class="color-circle bg-success rounded-circle border-0" 
+                                        style="width: 30px; height: 30px; cursor: pointer; ${this.selectedColor === 'green' ? 'outline: 2px solid var(--primary-color); outline-offset: 2px;' : ''}" 
                                         onclick="window.productsManager.selectColor('green')"
-                                        style="width: 40px; height: 40px;">
-                                </button>
-                                <button class="btn btn-outline-info rounded-circle p-2 ${this.selectedColor === 'cyan' ? 'active' : ''}"
+                                        title="Green"></button>
+                                <button class="color-circle bg-info rounded-circle border-0" 
+                                        style="width: 30px; height: 30px; cursor: pointer; ${this.selectedColor === 'cyan' ? 'outline: 2px solid var(--primary-color); outline-offset: 2px;' : ''}" 
                                         onclick="window.productsManager.selectColor('cyan')"
-                                        style="width: 40px; height: 40px;">
-                                </button>
+                                        title="Cyan"></button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Quantity:</label>
+                            <div class="input-group" style="width: 140px;">
+                                <button class="btn btn-outline-secondary" type="button" onclick="this.nextElementSibling.stepDown()">-</button>
+                                <input type="number" class="form-control text-center" value="1" min="1" max="${product.stock || 10}" style="border-color: var(--primary-color);">
+                                <button class="btn btn-outline-secondary" type="button" onclick="this.previousElementSibling.stepUp()">+</button>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary btn-lg">
-                                Add to Cart
-                            </button>
-                            <button class="btn btn-outline-primary btn-lg">
-                                Add to Wishlist
-                            </button>
-                        </div>
+                        <button class="btn btn-primary w-100 py-2" onclick="window.productsManager.addToCart('${product.product_id}')">
+                            <i class="bi bi-cart-plus me-2"></i>Add to cart
+                        </button>
                     </div>
                 </div>
             </div>
