@@ -1,7 +1,3 @@
-<?php
-// Template HTML per la pagina principale
-?>
-
 <!-- Navigation Tabs -->
 <div class="nav-container sticky-top bg-white border-bottom mb-3">
     <nav class="nav nav-tabs justify-content-center">
@@ -35,7 +31,3 @@
         </div>
     </div>
 </div>
-
-<script type="module" src="/UNIverseCycling/js/api-service.js"></script>
-<script type="module" src="/UNIverseCycling/js/products.js"></script>
-<script type="module" src="/UNIverseCycling/js/categories.js"></script>

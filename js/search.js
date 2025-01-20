@@ -1,4 +1,6 @@
 // search.js
+import APIService from './api-service.js';
+
 class SearchManager {
     constructor() {
         this.init();
@@ -58,14 +60,7 @@ class SearchManager {
             this.showLoading();
 
             // Esegui la ricerca
-            const response = await fetch(`/UNIverseCycling/api/products.php?action=search&query=${encodeURIComponent(query)}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const results = await response.json();
-
-            console.log("Ecco results:");
-            console.log(results);
+            const results = await APIService.searchProducts(query);
 
             // Mostra i risultati
             this.displayResults(results);
@@ -78,41 +73,29 @@ class SearchManager {
     }
 
     displayResults(results) {
-        // Trova o crea il container dei risultati
-        let resultsContainer = document.querySelector('.search-results');
-        if (!resultsContainer) {
-            resultsContainer = document.createElement('div');
-            resultsContainer.className = 'search-results';
-            document.querySelector('.search-container').appendChild(resultsContainer);
-        }
+        // Get the main content container
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) return;
 
-        // Se non ci sono risultati
+        // Clear the main content
+        mainContent.innerHTML = '';
+
+        // If no results
         if (!results || results.length === 0) {
-            resultsContainer.innerHTML = `
-                <div class="no-results p-3 text-center text-muted">
-                    No products found
+            mainContent.innerHTML = `
+                <div class="container mt-4">
+                    <div class="alert alert-info">No products found</div>
                 </div>
             `;
             return;
         }
 
-        // Renderizza i risultati
-        resultsContainer.innerHTML = `
-            <div class="results-list">
-                ${results.map(product => `
-                    <div class="search-result-item p-2" onclick="window.productsManager.showProductDetails(${product.id})">
-                        <div class="d-flex align-items-center">
-                            <img src="${product.image_path}"
-                                 class="search-result-image me-2"
-                                 alt="${product.name}"
-                                 onerror="this.src='/UNIverseCycling/assets/images/placeholder.jpg'">
-                            <div class="search-result-info">
-                                <div class="search-result-title">${product.name}</div>
-                                <div class="search-result-price">€${parseFloat(product.price).toFixed(2)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
+        // Create container for search results
+        mainContent.innerHTML = `
+            <div class="container mt-4">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                    ${results.map(product => window.productsManager.renderProductCard(product)).join('')}
+                </div>
             </div>
         `;
     }
