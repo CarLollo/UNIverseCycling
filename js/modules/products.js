@@ -168,7 +168,7 @@ export class ProductsManager {
                              class="product-image" 
                              alt="${product.name}"
                              loading="lazy"
-                             onerror="this.src='/UNIverseCycling/assets/images/placeholder.jpg'">
+                             onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
                     </div>
                     <div class="product-info p-3">
                         <h4 class="product-title h6 mb-2">${product.name}</h4>
@@ -311,7 +311,7 @@ export class ProductsManager {
                         <img src="${imagePath}" 
                              class="img-fluid rounded shadow-sm" 
                              alt="${product.name}"
-                             onerror="this.src='/UNIverseCycling/assets/images/placeholder.jpg'">
+                             onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
                     </div>
                     
                     <div class="col-md-6">
