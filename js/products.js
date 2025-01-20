@@ -114,34 +114,51 @@ class ProductsManager {
     async showProductDetails(productId, updateHistory = true) {
         try {
             console.log('Showing product details:', productId);
+            
+            // Se il prodotto non è in cache, caricalo dall'API
             let product = this.products.get(productId);
             if (!product) {
                 product = await APIService.getProductDetails(productId);
+                if (!product) {
+                    throw new Error('Product not found');
+                }
                 this.products.set(productId, product);
             }
 
+            // Aggiorna l'URL se richiesto
             if (updateHistory) {
                 const currentParams = new URLSearchParams(window.location.search);
                 const searchQuery = currentParams.get('query');
+                const categoryId = currentParams.get('id');
+                const fromCategory = currentParams.get('action') === 'category';
                 
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.set('action', 'product');
                 newUrl.searchParams.set('id', productId);
+                
                 if (searchQuery) {
                     newUrl.searchParams.set('query', searchQuery);
+                }
+                
+                if (fromCategory && categoryId) {
+                    newUrl.searchParams.set('from_category', categoryId);
                 }
                 
                 history.pushState({ 
                     action: 'product', 
                     productId: productId,
-                    previousQuery: searchQuery 
+                    previousQuery: searchQuery,
+                    fromCategory: fromCategory ? categoryId : null
                 }, '', newUrl.toString());
             }
 
             const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.innerHTML = this.renderProductDetails(product);
+            if (!mainContent) {
+                throw new Error('Main content container not found');
             }
+            
+            mainContent.innerHTML = this.renderProductDetails(product);
+            
         } catch (error) {
             console.error('Error loading product details:', error);
             const mainContent = document.querySelector('.main-content');
@@ -160,16 +177,23 @@ class ProductsManager {
             ? `/UNIverseCycling${product.image_path}`
             : `/UNIverseCycling/${product.image_path}`;
 
-        // Determina se siamo arrivati da una ricerca
+        // Determina se siamo arrivati da una ricerca o da una categoria
         const params = new URLSearchParams(window.location.search);
         const searchQuery = params.get('query');
+        const fromCategoryId = params.get('from_category');
         
         // Prepara il link back
-        const backLink = searchQuery 
-            ? `${window.location.pathname}?action=search&query=${encodeURIComponent(searchQuery)}`
-            : window.location.pathname;
-        
-        const backText = searchQuery ? 'Back to Search Results' : 'Back to Home';
+        let backLink, backText;
+        if (searchQuery) {
+            backLink = `${window.location.pathname}?action=search&query=${encodeURIComponent(searchQuery)}`;
+            backText = 'Back to Search Results';
+        } else if (fromCategoryId) {
+            backLink = `${window.location.pathname}?action=category&id=${fromCategoryId}`;
+            backText = 'Back to Category';
+        } else {
+            backLink = window.location.pathname;
+            backText = 'Back to Home';
+        }
 
         return `
             <div class="container mt-4">

@@ -178,7 +178,7 @@ class CategoriesManager {
                         <div class="col">
                             <div class="product-card h-100" 
                                  role="button"
-                                 onclick="window.productsManager.showProductDetails(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                                 onclick="window.productsManager.showProductDetails('${product.product_id}')">
                                 <div class="product-image-wrapper">
                                     <img src="${product.image_path}" 
                                          class="product-image" 
