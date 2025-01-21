@@ -163,7 +163,7 @@ export class ProductsManager {
 
             mainContent.innerHTML = `
                 <div class="container mt-4">
-                    <a href="javascript:history.back()" class="text-decoration-none text-dark d-inline-flex align-items-center mb-3">
+                    <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="productsManager.getBackLink; return false;">
                         <i class="bi bi-arrow-left me-2"></i>
                         <span>Back</span>
                     </a>
@@ -489,6 +489,17 @@ export class ProductsManager {
             toast.addEventListener('hidden.bs.toast', () => {
                 toast.remove();
             });
+        }
+    }
+
+    goBack() {
+        const params = new URLSearchParams(window.location.search);
+        const fromCategory = params.get('fromCategory');
+        
+        if (fromCategory) {
+            window.pageLoader.loadPage('category', { id: fromCategory });
+        } else {
+            window.pageLoader.loadPage('home');
         }
     }
 }
