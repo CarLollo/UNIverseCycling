@@ -163,10 +163,7 @@ export class ProductsManager {
 
             mainContent.innerHTML = `
                 <div class="container mt-4">
-                    <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="productsManager.getBackLink; return false;">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        <span>Back</span>
-                    </a>
+                    ${window.pageLoader.getBackLink()}
                     <div class="row">
                         <div class="col-md-6">
                             <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}" 
@@ -257,55 +254,38 @@ export class ProductsManager {
                 throw new Error('Please enter a valid quantity');
             }
 
-            console.log('Adding to cart:', { productId, quantity });
-            try {
-                await APIService.addToCart(productId, quantity);
-                console.log('Product added to cart successfully');
-                
-                // Aggiorna il carrello
-                if (window.cartManager) {
-                    console.log('Updating cart...');
-                    await window.cartManager.loadCart();
-                } else {
-                    console.error('Cart manager not found');
-                }
+            // Aggiungi al carrello
+            await APIService.addToCart(productId, quantity);
+            
+            // Crea il toast
+            const toastContainer = document.querySelector('.toast-container');
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Item added to cart
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Aggiungi il toast al container
+            toastContainer.innerHTML = toastHtml;
+            
+            // Inizializza e mostra il toast
+            const toastEl = toastContainer.querySelector('.toast');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
 
-                // Mostra messaggio di successo solo dopo che tutto è andato bene
-                const toastContainer = document.querySelector('.toast-container');
-                if (toastContainer) {
-                    const toast = document.createElement('div');
-                    toast.className = 'toast show';
-                    toast.textContent = 'Product added to cart successfully';
-                    toastContainer.appendChild(toast);
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 3000);
-                }
-            } catch (error) {
-                console.error('Error adding to cart:', error);
-                const toastContainer = document.querySelector('.toast-container');
-                if (toastContainer) {
-                    const toast = document.createElement('div');
-                    toast.className = 'toast show error';
-                    toast.textContent = error.message || 'Failed to add product to cart';
-                    toastContainer.appendChild(toast);
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 3000);
-                }
-            }
+            // Aggiorna il carrello
+            const { cartManager } = await import('./cart.js');
+            await cartManager.loadCart();
+
         } catch (error) {
             console.error('Error adding to cart:', error);
-            const toastContainer = document.querySelector('.toast-container');
-            if (toastContainer) {
-                const toast = document.createElement('div');
-                toast.className = 'toast show error';
-                toast.textContent = error.message || 'Failed to add product to cart';
-                toastContainer.appendChild(toast);
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            }
+            this.showError(error.message || 'Error adding product to cart. Please try again later.');
         }
     }
 

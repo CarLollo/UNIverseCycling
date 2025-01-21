@@ -6,14 +6,14 @@ $templateParams = [
     "title" => "UNIverseCycling",
     "js" => [
         "js/services/api-service.js",
-        "js/services/storage-service.js",
         "js/services/auth.service.js",
+        "js/modules/page-loader.js",
         "js/modules/auth.js",
         "js/modules/products.js",
-        "js/modules/categories.js",
         "js/modules/cart.js",
-        "js/modules/page-loader.js",
+        "js/modules/categories.js",
         "js/modules/search.js",
+        "js/modules/orders.js",
         "js/main.js"
     ]
 ];

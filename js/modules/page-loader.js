@@ -10,6 +10,7 @@ export class PageLoader {
         this.mainContent = document.querySelector('.main-content');
         this.currentPage = null;
         this.pages = new Map();
+        this.navigationHistory = [];
         this.init();
     }
 
@@ -126,44 +127,62 @@ export class PageLoader {
         if (searchContainer) searchContainer.style.display = 'block';
     }
 
-    async loadPage(pageName, updateHistory = true) {
-        if (!this.mainContent || !this.pages.has(pageName)) {
-            console.error('Cannot load page:', pageName);
+    loadPage(pageName, params = {}) {
+        // Salva la pagina corrente nella cronologia
+        if (this.currentPage) {
+            this.navigationHistory.push({
+                page: this.currentPage,
+                params: new URLSearchParams(window.location.search)
+            });
+        }
+
+        const page = this.pages.get(pageName);
+        if (!page) {
+            console.error(`Page ${pageName} not found`);
             return;
         }
 
-        const pageConfig = this.pages.get(pageName);
+        this.currentPage = pageName;
 
-        try {
-            const response = await fetch(pageConfig.url);
-            if (!response.ok) {
-                throw new Error('Errore nel caricamento della pagina');
-            }
-            
-            const html = await response.text();
-            this.mainContent.innerHTML = html;
-            
-            if (pageConfig.onLoad) {
-                pageConfig.onLoad();
-            }
+        // Costruisci l'URL con i parametri
+        const queryString = Object.entries(params)
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
+        const url = `${page.url}${queryString ? '?' + queryString : ''}`;
 
-            if (updateHistory && !pageConfig.disableNavigation) {
-                const url = new URL(window.location);
-                url.searchParams.set('page', pageName);
-                history.pushState({ page: pageName }, '', url);
-            }
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                this.mainContent.innerHTML = html;
+                if (page.onLoad) {
+                    page.onLoad(params);
+                }
+                if (!page.hideNav) {
+                    this.showNavigationElements();
+                }
+                window.scrollTo(0, 0);
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
+            });
+    }
 
-            if (pageConfig.hideNav) {
-                this.hideNavigationElements();
-            } else {
-                this.showNavigationElements();
-            }
-
-            this.updateActiveNavItem(pageName);
-        } catch (error) {
-            console.error('Error loading page:', error);
-            this.mainContent.innerHTML = '<div class="alert alert-danger">Error loading page</div>';
+    goBack() {
+        if (this.navigationHistory.length > 0) {
+            const lastPage = this.navigationHistory.pop();
+            this.loadPage(lastPage.page, Object.fromEntries(lastPage.params));
+        } else {
+            this.loadPage('home');
         }
+    }
+
+    getBackLink() {
+        return `
+            <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.goBack(); return false;">
+                <i class="bi bi-arrow-left me-2"></i>
+                <span>Back</span>
+            </a>
+        `;
     }
 
     showLoading() {
@@ -194,3 +213,4 @@ export class PageLoader {
 }
 
 export const pageLoader = new PageLoader();
+window.pageLoader = pageLoader;
