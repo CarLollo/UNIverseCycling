@@ -1,11 +1,11 @@
-<?php 
+<?php
 $pageTitle = "Notifications";
 include_once __DIR__ . '/../components/header.php';
 ?>
 
 <div class="container mt-4">
-    <h1>Notifications</h1>
-    
+    <h2>Notifications</h2>
+
     <div id="notifications-container">
         <!-- Le notifiche verranno caricate qui dinamicamente -->
     </div>
@@ -27,11 +27,11 @@ include_once __DIR__ . '/../components/header.php';
 
 <script type="module">
     import { NotificationManager } from '../js/modules/notification-manager.js';
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         const notificationManager = new NotificationManager();
         notificationManager.init();
     });
 </script>
 
-<?php include_once __DIR__ . '/../components/footer.php'; ?>
+<?php include_once __DIR__ . '/../components/navigation/bottomNav.php'; ?>

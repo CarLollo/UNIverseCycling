@@ -8,7 +8,7 @@ $pageTitle = "Register - UNIverseCycling";
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h2 class="text-center mb-4">Create Account</h2>
-                    
+
                     <div class="auth-error alert alert-danger" style="display: none;" role="alert"></div>
 
                     <form id="register-form">
@@ -30,8 +30,8 @@ $pageTitle = "Register - UNIverseCycling";
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required 
-                                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                                    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
                         </div>
 
@@ -56,7 +56,7 @@ $pageTitle = "Register - UNIverseCycling";
                     </form>
 
                     <div class="text-center mt-3">
-                        <p class="mb-0">Already have an account? <a href="login.php">Login here</a></p>
+                        <p class="mb-0">Already have an account? <a href="?page=login">Login here</a></p>
                     </div>
                 </div>
             </div>
