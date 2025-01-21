@@ -30,11 +30,49 @@ export class CategoriesManager {
         if (!this.categoriesContainer) return;
 
         try {
-            const products = await APIService.getCategoryById(categoryId);
-            this.renderCategoryProducts(products);
+            const products = await APIService.getProductsByCategory(categoryId);
+            if (!products || products.length === 0) {
+                this.categoriesContainer.innerHTML = `
+                    <div class="container py-4">
+                        <div class="mb-3">
+                            <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                            </a>
+                        </div>
+                        <div class="text-center py-4">
+                            <p class="mb-0">No products available in this category</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            this.categoriesContainer.innerHTML = `
+                <div class="container py-4">
+                    <div class="mb-4">
+                        <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                        </a>
+                    </div>
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                        ${products.map(product => window.productsManager.renderProductCard(product)).join('')}
+                    </div>
+                </div>
+            `;
         } catch (error) {
             console.error('Error loading category products:', error);
-            this.showError('Error loading products for this category. Please try again.');
+            this.categoriesContainer.innerHTML = `
+                <div class="container py-4">
+                    <div class="mb-3">
+                        <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                        </a>
+                    </div>
+                    <div class="alert alert-danger">
+                        Error loading products. Please try again.
+                    </div>
+                </div>
+            `;
         }
     }
 
@@ -56,7 +94,6 @@ export class CategoriesManager {
             </div>
         `;
 
-        // Aggiungi gli event listeners dopo aver renderizzato
         document.querySelectorAll('.category-banner').forEach(card => {
             card.addEventListener('click', () => {
                 const categoryId = card.dataset.categoryId;
@@ -72,68 +109,16 @@ export class CategoriesManager {
 
         return `
             <div class="category-banner" data-category-id="${category.category_id}">
-                <div class="position-relative">
+                <div class="product-card card border-0 shadow-sm position-relative overflow-hidden" style="height: 150px;">
                     <img src="${imagePath}" 
+                         class="position-absolute w-100 h-100" 
                          alt="${category.name}"
-                         class="w-100 category-img">
-                    <div class="category-overlay">
-                        <div>
-                            <h3 class="category-title">${category.name}</h3>
-                            <p class="text-white mb-0 mt-2 opacity-75">${category.product_count || 0} Products</p>
+                         style="object-fit: cover; right: 0; top: 0;">
+                    <div class="card-img-overlay d-flex flex-column justify-content-between bg-gradient">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h3 class="h5 text-white mb-0">${category.name}</h3>
                         </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderCategoryProducts(products) {
-        if (!this.categoriesContainer) return;
-
-        if (products.length === 0) {
-            this.categoriesContainer.innerHTML = `
-                <div class="text-center py-4">
-                    <p class="mb-0">No products available in this category</p>
-                </div>
-            `;
-            return;
-        }
-
-        this.categoriesContainer.innerHTML = `
-            <div class="mb-3">
-                <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Categories
-                </a>
-            </div>
-            <div class="row row-cols-2 row-cols-md-3 g-3">
-                ${products.map(product => this.renderProductCard(product)).join('')}
-            </div>
-        `;
-
-        // Aggiungi gli event listeners dopo aver renderizzato
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const productId = card.dataset.productId;
-                window.productsManager.showProductDetails(productId);
-            });
-        });
-    }
-
-    renderProductCard(product) {
-        const imagePath = product.image_path.startsWith('/') 
-            ? `/UNIverseCycling${product.image_path}`
-            : `/UNIverseCycling/${product.image_path}`;
-
-        return `
-            <div class="col">
-                <div class="product-card card h-100 border-0 shadow-sm" data-product-id="${product.product_id}">
-                    <img src="${imagePath}" 
-                         class="card-img-top" 
-                         alt="${product.name}"
-                         style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">${product.name}</h5>
-                        <p class="card-text text-primary mb-0">€${parseFloat(product.price).toFixed(2)}</p>
+                        <p class="text-white mb-0">${category.product_count || 0} Products</p>
                     </div>
                 </div>
             </div>
