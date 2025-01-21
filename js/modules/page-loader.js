@@ -29,7 +29,8 @@ export class PageLoader {
                 categoriesManager.init();
                 categoriesManager.showCategories();
                 searchManager.init();
-            }
+            },
+            showTabs: true
         });
 
         this.pages.set('categories', {
@@ -37,7 +38,8 @@ export class PageLoader {
             onLoad: () => {
                 categoriesManager.init();
                 categoriesManager.showCategories();
-            }
+            },
+            showTabs: true
         });
 
         this.pages.set('login', {
@@ -130,6 +132,12 @@ export class PageLoader {
 
         const searchContainer = document.querySelector('.search-container');
         if (searchContainer) searchContainer.style.display = 'none';
+
+        const tabs = document.querySelector('.nav.nav-tabs');
+        if (tabs) tabs.style.display = 'none';
+
+        const topNav = document.querySelector('.navbar:not(.fixed-bottom)');
+        if (topNav) topNav.style.display = 'none';
     }
 
     showNavigationElements() {
@@ -138,6 +146,12 @@ export class PageLoader {
 
         const searchContainer = document.querySelector('.search-container');
         if (searchContainer) searchContainer.style.display = 'block';
+
+        const tabs = document.querySelector('.nav.nav-tabs');
+        if (tabs) tabs.style.display = 'flex';
+
+        const topNav = document.querySelector('.navbar:not(.fixed-bottom)');
+        if (topNav) topNav.style.display = 'flex';
     }
 
     loadPage(pageName, params = {}) {
@@ -157,14 +171,28 @@ export class PageLoader {
 
         this.currentPage = pageName;
 
-        // Aggiorna il tab attivo
-        document.querySelectorAll('.nav-link').forEach(tab => {
-            if (tab.dataset.page === pageName) {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
+        // Aggiorna il tab attivo solo se la pagina deve mostrare i tabs
+        if (page.showTabs) {
+            document.querySelectorAll('.nav-link').forEach(tab => {
+                if (tab.dataset.page === pageName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        // Gestisci la visibilità degli elementi di navigazione
+        if (page.hideNav) {
+            this.hideNavigationElements();
+        } else {
+            this.showNavigationElements();
+            // Nascondi i tabs se la pagina non li richiede
+            if (!page.showTabs) {
+                const tabs = document.querySelector('.nav.nav-tabs');
+                if (tabs) tabs.style.display = 'none';
             }
-        });
+        }
 
         // Costruisci l'URL con i parametri
         const queryString = Object.entries(params)
@@ -178,9 +206,6 @@ export class PageLoader {
                 this.mainContent.innerHTML = html;
                 if (page.onLoad) {
                     page.onLoad(params);
-                }
-                if (!page.hideNav) {
-                    this.showNavigationElements();
                 }
                 window.scrollTo(0, 0);
             })
