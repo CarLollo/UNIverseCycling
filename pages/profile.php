@@ -22,6 +22,12 @@
                             <div class="flex-grow-1">Change Password</div>
                             <i class="bi bi-chevron-right"></i>
                         </a>
+
+                        <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="change-password">
+                            <i class="bi bi-lock me-3"></i>
+                            <div class="flex-grow-1">Notifications</div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
                     </div>
 
                     <!-- Logout Button -->

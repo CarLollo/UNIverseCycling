@@ -1,5 +1,6 @@
 import { APIService } from '../services/api-service.js';
 import { AuthService } from '../services/auth.service.js';
+import { notificationManager } from './notification-manager.js';
 
 export class OrdersManager {
     constructor() {
@@ -20,14 +21,19 @@ export class OrdersManager {
     async loadOrders() {
         if (!AuthService.isAuthenticated()) {
             window.location.href = '/pages/auth/login.php';
+            await notificationManager.createNotification('warning', 'Devi effettuare il login per vedere i tuoi ordini');
             return;
         }
 
         try {
             const orders = await APIService.request('/orders.php?action=getOrders');
             this.renderOrders(orders);
+            if (orders.length > 0) {
+                await notificationManager.createNotification('info', `Hai ${orders.length} ordini`);
+            }
         } catch (error) {
             console.error('Error loading orders:', error);
+            await notificationManager.createNotification('error', 'Errore nel caricamento degli ordini');
         }
     }
 
@@ -38,8 +44,8 @@ export class OrdersManager {
         if (orders.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-5">
-                    <h3>No orders yet</h3>
-                    <p>Start shopping to see your orders here!</p>
+                    <h3>Nessun ordine</h3>
+                    <p>Inizia a fare acquisti per vedere i tuoi ordini qui!</p>
                 </div>
             `;
             return;
@@ -56,14 +62,28 @@ export class OrdersManager {
         return `
             <div class="list-group-item">
                 <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">Order #${order.id}</h5>
+                    <h5 class="mb-1">Ordine #${order.id}</h5>
                     <small>${new Date(order.date).toLocaleDateString()}</small>
                 </div>
-                <p class="mb-1">Status: ${order.status}</p>
-                <p class="mb-1">Total: €${order.total.toFixed(2)}</p>
-                <small>Items: ${order.items.length}</small>
+                <p class="mb-1">Stato: ${order.status}</p>
+                <p class="mb-1">Totale: €${order.total.toFixed(2)}</p>
+                <small>Articoli: ${order.items.length}</small>
             </div>
         `;
+    }
+
+    async updateOrderStatus(orderId, newStatus) {
+        try {
+            await APIService.request('/orders.php?action=updateStatus', {
+                method: 'POST',
+                body: JSON.stringify({ orderId, status: newStatus })
+            });
+            await notificationManager.createNotification('success', `Stato dell'ordine #${orderId} aggiornato a ${newStatus}`);
+            await this.loadOrders(); // Ricarica gli ordini
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            await notificationManager.createNotification('error', `Errore nell'aggiornamento dello stato dell'ordine #${orderId}`);
+        }
     }
 }
 

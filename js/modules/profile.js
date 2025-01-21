@@ -1,5 +1,6 @@
 import { AuthService } from '../services/auth.service.js';
 import { pageLoader } from './page-loader.js';
+import { notificationManager } from './notification-manager.js';
 
 class ProfileManager {
     constructor() {
@@ -65,7 +66,7 @@ class ProfileManager {
             }
         } catch (error) {
             console.error('Error loading user data:', error);
-            alert('Error loading user data: ' + error.message);
+            await notificationManager.createNotification('error', 'Errore nel caricamento dei dati utente');
         }
     }
 
@@ -107,127 +108,105 @@ class ProfileManager {
             });
         }
 
-        // Save Profile Changes
-        const saveProfileBtn = document.getElementById('save-profile');
-        if (saveProfileBtn) {
-            saveProfileBtn.addEventListener('click', () => {
-                this.saveProfileChanges();
-            });
-        }
-
-        // Save Password Changes
-        const savePasswordBtn = document.getElementById('save-password');
-        if (savePasswordBtn) {
-            savePasswordBtn.addEventListener('click', () => {
-                this.savePasswordChanges();
-            });
-        }
-
         // Logout Button
-        const logoutBtn = document.getElementById('logout-btn');
+        const logoutBtn = document.querySelector('[data-action="logout"]');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                AuthService.logout();
-                pageLoader.loadPage('login');
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleLogout();
+            });
+        }
+
+        // Edit Profile Form
+        const editProfileForm = document.getElementById('edit-profile-form');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleProfileUpdate(e.target);
+            });
+        }
+
+        // Change Password Form
+        const changePasswordForm = document.getElementById('change-password-form');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handlePasswordChange(e.target);
             });
         }
     }
 
-    async saveProfileChanges() {
-        const form = document.getElementById('edit-profile-form');
-        if (!form) return;
-
-        const currentEmail = this.currentUserData?.email;
-        const newEmail = form.email.value.trim();
-
-        const data = {
-            firstName: form.firstName.value.trim(),
-            lastName: form.lastName.value.trim(),
-            email: newEmail,
-            phone: form.phone.value.trim()
-        };
-
+    async handleProfileUpdate(form) {
         try {
+            const formData = {
+                firstName: form.firstName.value,
+                lastName: form.lastName.value,
+                email: form.email.value,
+                phone: form.phone.value
+            };
+
             const response = await fetch('/UNIverseCycling/api/user/update-profile.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${AuthService.getToken()}`
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(formData)
             });
 
-            const responseText = await response.text();
-            
-            try {
-                const result = JSON.parse(responseText);
-                
-                if (result.success) {
-                    this.editProfileModal.hide();
-                    
-                    // Se l'email è stata cambiata, fai il logout
-                    if (currentEmail && newEmail !== currentEmail) {
-                        alert('Email changed. Please login again with your new email.');
-                        AuthService.logout();
-                        pageLoader.loadPage('login');
-                    } else {
-                        // Altrimenti ricarica solo la pagina profilo
-                        alert(result.message);
-                        pageLoader.loadPage('profile');
-                    }
-                } else {
-                    throw new Error(result.message || 'Failed to update profile');
-                }
-            } catch (parseError) {
-                console.error('Response parsing error:', parseError);
-                console.error('Raw response:', responseText);
-                throw new Error('Server response was not in the expected format');
+            const data = await response.json();
+            if (data.success) {
+                this.editProfileModal.hide();
+                await this.loadUserData();
+                await notificationManager.createNotification('success', 'Profilo aggiornato con successo');
+            } else {
+                throw new Error(data.message || 'Failed to update profile');
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert(error.message || 'An error occurred while updating your profile');
+            await notificationManager.createNotification('error', 'Errore durante l\'aggiornamento del profilo');
         }
     }
 
-    async savePasswordChanges() {
-        const form = document.getElementById('change-password-form');
-        if (!form) return;
-
-        const newPassword = form.newPassword.value;
-        const confirmPassword = form.confirmPassword.value;
-
-        if (newPassword !== confirmPassword) {
-            alert('New passwords do not match');
-            return;
-        }
-
-        const data = {
-            currentPassword: form.currentPassword.value,
-            newPassword: newPassword
-        };
-
+    async handlePasswordChange(form) {
         try {
+            const formData = {
+                currentPassword: form.currentPassword.value,
+                newPassword: form.newPassword.value,
+                confirmPassword: form.confirmPassword.value
+            };
+
             const response = await fetch('/UNIverseCycling/api/user/change-password.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${AuthService.getToken()}`
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(formData)
             });
 
-            const result = await response.json();
-            if (result.success) {
-                this.changePasswordModal.hide();
+            const data = await response.json();
+            if (data.success) {
                 form.reset();
-                alert('Password changed successfully');
-                pageLoader.loadPage('profile');
+                this.changePasswordModal.hide();
+                await notificationManager.createNotification('success', 'Password modificata con successo');
             } else {
-                alert(result.message || 'Failed to change password');
+                throw new Error(data.message || 'Failed to change password');
             }
         } catch (error) {
             console.error('Error changing password:', error);
-            alert('An error occurred while changing your password');
+            await notificationManager.createNotification('error', 'Errore durante il cambio password');
+        }
+    }
+
+    async handleLogout() {
+        try {
+            await AuthService.logout();
+            await notificationManager.createNotification('info', 'Logout effettuato con successo');
+            pageLoader.loadPage('home');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            await notificationManager.createNotification('error', 'Errore durante il logout');
         }
     }
 }

@@ -1,5 +1,6 @@
 import { APIService } from '../services/api-service.js';
 import { pageLoader } from './page-loader.js';
+import { notificationManager } from './notification-manager.js';
 
 export class ProductsManager {
     constructor() {
@@ -88,7 +89,7 @@ export class ProductsManager {
             // Renderizza la griglia
             this.productsContainer.innerHTML = this.renderProductsGrid(products);
         } catch (error) {
-            console.error('Error loading products:', error);
+            await notificationManager.createNotification('error', 'Errore durante il caricamento dei prodotti');
             this.showError('Error loading products. Please try again later.');
         } finally {
             this.hideLoading();
@@ -110,7 +111,7 @@ export class ProductsManager {
             
             this.productsContainer.innerHTML = this.renderProductsGrid(products);
         } catch (error) {
-            console.error('Error loading category products:', error);
+            await notificationManager.createNotification('error', 'Errore durante la rimozione dal carrello');
             this.showError('Error loading category products. Please try again later.');
         } finally {
             this.hideLoading();
@@ -285,7 +286,7 @@ export class ProductsManager {
             await cartManager.loadCart();
 
         } catch (error) {
-            console.error('Error adding to cart:', error);
+            await notificationManager.createNotification('error', 'Errore durante l\'aggiunta al carrello');
             this.showError(error.message || 'Error adding product to cart. Please try again later.');
         }
     }

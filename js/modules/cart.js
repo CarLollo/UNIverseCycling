@@ -21,6 +21,12 @@ export class CartManager {
                 await this.removeFromCart(productId);
             }
         });
+
+        // Bind checkout button
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', () => this.checkout());
+        }
     }
 
     async loadCart() {
@@ -37,6 +43,7 @@ export class CartManager {
             }
         } catch (error) {
             console.error('Error loading cart:', error);
+            await notificationManager.createNotification('error', 'Errore nel caricamento del carrello');
         }
     }
 
@@ -103,7 +110,6 @@ export class CartManager {
         try {
             await APIService.removeFromCart(productId);
             await this.loadCart();
-            // Crea una notifica di successo
             await notificationManager.createNotification('success', 'Prodotto rimosso dal carrello');
         } catch (error) {
             console.error('Error removing from cart:', error);
@@ -112,10 +118,15 @@ export class CartManager {
     }
 
     async addToCart(productId, quantity = 1) {
+        if (!AuthService.isAuthenticated()) {
+            await notificationManager.createNotification('warning', 'Devi effettuare il login per aggiungere prodotti al carrello');
+            window.location.href = '/UNIverseCycling/pages/auth/login.php';
+            return;
+        }
+
         try {
             await APIService.addToCart(productId, quantity);
             await this.loadCart();
-            // Crea una notifica di successo
             await notificationManager.createNotification('success', 'Prodotto aggiunto al carrello');
         } catch (error) {
             console.error('Error adding to cart:', error);
@@ -124,8 +135,28 @@ export class CartManager {
     }
 
     async checkout() {
-        // Implementare il checkout
-        alert('Funzionalità di checkout non ancora implementata');
+        if (this.cartItems.length === 0) {
+            await notificationManager.createNotification('warning', 'Il carrello è vuoto');
+            return;
+        }
+
+        try {
+            const response = await APIService.request('/checkout.php', {
+                method: 'POST'
+            });
+
+            if (response.success) {
+                this.cartItems = [];
+                this.updateCartBadge();
+                this.showCart();
+                await notificationManager.createNotification('success', 'Ordine completato con successo!');
+            } else {
+                throw new Error(response.message || 'Checkout failed');
+            }
+        } catch (error) {
+            console.error('Error during checkout:', error);
+            await notificationManager.createNotification('error', 'Errore durante il checkout');
+        }
     }
 }
 
