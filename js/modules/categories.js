@@ -51,20 +51,36 @@ export class CategoriesManager {
         }
 
         this.categoriesContainer.innerHTML = `
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+            <div class="categories-fullwidth">
                 ${categories.map(category => this.renderCategoryCard(category)).join('')}
             </div>
         `;
+
+        // Aggiungi gli event listeners dopo aver renderizzato
+        document.querySelectorAll('.category-banner').forEach(card => {
+            card.addEventListener('click', () => {
+                const categoryId = card.dataset.categoryId;
+                this.showCategoryProducts(categoryId);
+            });
+        });
     }
 
     renderCategoryCard(category) {
+        const imagePath = category.image_path.startsWith('/') 
+            ? `/UNIverseCycling${category.image_path}`
+            : `/UNIverseCycling/${category.image_path}`;
+
         return `
-            <div class="col">
-                <div class="card h-100" onclick="categoriesManager.showCategoryProducts(${category.id})">
-                    <img src="${category.image}" class="card-img-top" alt="${category.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${category.name}</h5>
-                        <p class="card-text">${category.description}</p>
+            <div class="category-banner" data-category-id="${category.category_id}">
+                <div class="position-relative">
+                    <img src="${imagePath}" 
+                         alt="${category.name}"
+                         class="w-100 category-img">
+                    <div class="category-overlay">
+                        <div>
+                            <h3 class="category-title">${category.name}</h3>
+                            <p class="text-white mb-0 mt-2 opacity-75">${category.product_count || 0} Products</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,24 +100,40 @@ export class CategoriesManager {
         }
 
         this.categoriesContainer.innerHTML = `
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+            <div class="mb-3">
+                <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                </a>
+            </div>
+            <div class="row row-cols-2 row-cols-md-3 g-3">
                 ${products.map(product => this.renderProductCard(product)).join('')}
             </div>
         `;
+
+        // Aggiungi gli event listeners dopo aver renderizzato
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.dataset.productId;
+                window.productsManager.showProductDetails(productId);
+            });
+        });
     }
 
     renderProductCard(product) {
+        const imagePath = product.image_path.startsWith('/') 
+            ? `/UNIverseCycling${product.image_path}`
+            : `/UNIverseCycling/${product.image_path}`;
+
         return `
             <div class="col">
-                <div class="card h-100">
-                    <img src="${product.image}" class="card-img-top" alt="${product.name}">
+                <div class="product-card card h-100 border-0 shadow-sm" data-product-id="${product.product_id}">
+                    <img src="${imagePath}" 
+                         class="card-img-top" 
+                         alt="${product.name}"
+                         style="height: 200px; object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title">${product.name}</h5>
-                        <p class="card-text">€${product.price.toFixed(2)}</p>
-                        <button class="btn btn-primary btn-sm" 
-                                onclick="cartManager.addToCart(${product.id})">
-                            Add to Cart
-                        </button>
+                        <p class="card-text text-primary mb-0">€${parseFloat(product.price).toFixed(2)}</p>
                     </div>
                 </div>
             </div>

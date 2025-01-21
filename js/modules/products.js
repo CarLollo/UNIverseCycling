@@ -1,4 +1,5 @@
 import { APIService } from '../services/api-service.js';
+import { pageLoader } from './page-loader.js';
 
 export class ProductsManager {
     constructor() {
@@ -163,7 +164,7 @@ export class ProductsManager {
 
             mainContent.innerHTML = `
                 <div class="container mt-4">
-                    ${window.pageLoader.getBackLink()}
+                    ${pageLoader.getBackLink()}
                     <div class="row">
                         <div class="col-md-6">
                             <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}" 

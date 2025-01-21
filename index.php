@@ -32,6 +32,7 @@ $templateParams = [
     <div id="app">
         <?php include "components/header/header.php"; ?>
         
+        <?php include "components/navigation/tabsNav.php"; ?>
         <main class="main-content">
             <?php include "pages/home.php"; ?>
         </main>

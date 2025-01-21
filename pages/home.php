@@ -1,4 +1,3 @@
-<?php include "../navigation/tabsNav.php"; ?>
 <div class="container py-4">
     <div class="promo-banner rounded-4 text-white text-center p-4 mb-4">
         <h2 class="h3 mb-2">Welcome to UNIverseCycling</h2>

@@ -26,13 +26,18 @@ export class PageLoader {
             onLoad: () => {
                 productsManager.init();
                 productsManager.loadNewArrivals();
+                categoriesManager.init();
+                categoriesManager.showCategories();
                 searchManager.init();
             }
         });
 
         this.pages.set('categories', {
-            url: '/UNIverseCycling/pages/categories.php',
-            onLoad: () => categoriesManager.showCategories()
+            url: '/UNIverseCycling/pages/category.php',
+            onLoad: () => {
+                categoriesManager.init();
+                categoriesManager.showCategories();
+            }
         });
 
         this.pages.set('login', {
@@ -46,7 +51,7 @@ export class PageLoader {
         this.pages.set('register', {
             url: '/UNIverseCycling/pages/auth/register.php',
             onLoad: () => {
-                this.hideNavigationElements();
+                authManager.bindRegisterForm();
             },
             hideNav: true
         });
@@ -73,17 +78,25 @@ export class PageLoader {
     }
 
     setupNavigationListeners() {
-        document.querySelectorAll('[data-page]').forEach(link => {
-            link.addEventListener('click', (e) => {
+        // Tab navigation
+        document.querySelectorAll('.nav-link[data-page]').forEach(tab => {
+            tab.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = e.currentTarget.dataset.page;
+                const page = tab.dataset.page;
+                
+                // Aggiorna i tab
+                document.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Carica la pagina
                 this.loadPage(page);
             });
         });
 
-        window.addEventListener('popstate', (e) => {
-            if (e.state?.page) {
-                this.loadPage(e.state.page, false);
+        // Handle browser back/forward
+        window.addEventListener('popstate', (event) => {
+            if (event.state?.page) {
+                this.loadPage(event.state.page, false);
             }
         });
     }
@@ -143,6 +156,15 @@ export class PageLoader {
         }
 
         this.currentPage = pageName;
+
+        // Aggiorna il tab attivo
+        document.querySelectorAll('.nav-link').forEach(tab => {
+            if (tab.dataset.page === pageName) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
 
         // Costruisci l'URL con i parametri
         const queryString = Object.entries(params)

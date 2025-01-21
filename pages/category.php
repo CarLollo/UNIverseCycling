@@ -1,4 +1,3 @@
-<?php include "../navigation/tabsNav.php"; ?>
 <div class="container py-4">
     <div class="categories-container">
         <!-- Categories will be loaded dynamically -->
