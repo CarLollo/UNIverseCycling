@@ -5,6 +5,8 @@ export class NotificationManager {
         this.container = document.getElementById('notifications-container');
         this.notifications = [];
         this.badge = document.querySelector('.notification-badge');
+        this.settings = this.loadSettings();
+        this.init();
     }
 
     init() {
@@ -23,6 +25,30 @@ export class NotificationManager {
                 }
             }, 60000);
         }
+
+        // Crea il container per i toast se non esiste
+        if (!document.querySelector('.toast-container')) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+    }
+
+    loadSettings() {
+        const defaultSettings = {
+            success: true,
+            info: true,
+            warning: true,
+            error: true
+        };
+
+        const savedSettings = localStorage.getItem('notificationSettings');
+        return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
+    }
+
+    saveSettings(settings) {
+        localStorage.setItem('notificationSettings', JSON.stringify(settings));
+        this.settings = settings;
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
@@ -86,6 +112,11 @@ export class NotificationManager {
     }
 
     async createNotification(type, message) {
+        // Se il tipo di notifica è disabilitato, non mostrare nulla
+        if (!this.settings[type]) {
+            return;
+        }
+
         try {
             const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/create.php', {
                 method: 'POST',
@@ -101,6 +132,54 @@ export class NotificationManager {
         } catch (error) {
             console.error('Error creating notification:', error);
             return false;
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${this.getBackgroundColor(type)} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="${this.getIcon(type)} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.toast-container');
+        if (container) {
+            container.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            // Rimuovi il toast dopo che è stato nascosto
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+    }
+
+    getBackgroundColor(type) {
+        switch (type) {
+            case 'success': return 'success';
+            case 'info': return 'info';
+            case 'warning': return 'warning';
+            case 'error': return 'danger';
+            default: return 'primary';
+        }
+    }
+
+    getIcon(type) {
+        switch (type) {
+            case 'success': return 'bi bi-check-circle';
+            case 'info': return 'bi bi-info-circle';
+            case 'warning': return 'bi bi-exclamation-triangle';
+            case 'error': return 'bi bi-exclamation-circle';
+            default: return 'bi bi-bell';
         }
     }
 

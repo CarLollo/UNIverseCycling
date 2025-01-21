@@ -23,8 +23,9 @@
                             <i class="bi bi-chevron-right"></i>
                         </a>
 
-                        <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="change-password">
-                            <i class="bi bi-lock me-3"></i>
+                        <!-- Notification Settings -->
+                        <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="notification-settings">
+                            <i class="bi bi-bell me-3"></i>
                             <div class="flex-grow-1">Notifications</div>
                             <i class="bi bi-chevron-right"></i>
                         </a>
@@ -105,6 +106,54 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="save-password">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Settings Modal -->
+<div class="modal fade" id="notificationSettingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notification Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="notification-settings-form">
+                    <div class="mb-3">
+                        <label class="form-label">Notification Types</label>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="success-notifications" checked>
+                            <label class="form-check-label" for="success-notifications">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Success Notifications
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="info-notifications" checked>
+                            <label class="form-check-label" for="info-notifications">
+                                <i class="bi bi-info-circle text-info me-2"></i>
+                                Info Notifications
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="warning-notifications" checked>
+                            <label class="form-check-label" for="warning-notifications">
+                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                Warning Notifications
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="error-notifications" checked>
+                            <label class="form-check-label" for="error-notifications">
+                                <i class="bi bi-exclamation-circle text-danger me-2"></i>
+                                Error Notifications
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Settings</button>
+                </form>
             </div>
         </div>
     </div>

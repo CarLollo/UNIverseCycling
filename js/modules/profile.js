@@ -6,6 +6,7 @@ class ProfileManager {
     constructor() {
         this.editProfileModal = null;
         this.changePasswordModal = null;
+        this.notificationSettingsModal = null;
         this.currentUserData = null;
     }
 
@@ -15,6 +16,7 @@ class ProfileManager {
         // Initialize Bootstrap modals
         const editProfileModalEl = document.getElementById('editProfileModal');
         const changePasswordModalEl = document.getElementById('changePasswordModal');
+        const notificationSettingsModalEl = document.getElementById('notificationSettingsModal');
         
         if (editProfileModalEl) {
             this.editProfileModal = new bootstrap.Modal(editProfileModalEl);
@@ -26,6 +28,12 @@ class ProfileManager {
             this.changePasswordModal = new bootstrap.Modal(changePasswordModalEl);
         } else {
             console.error('Change password modal not found');
+        }
+
+        if (notificationSettingsModalEl) {
+            this.notificationSettingsModal = new bootstrap.Modal(notificationSettingsModalEl);
+        } else {
+            console.error('Notification settings modal not found');
         }
 
         // Load user data
@@ -57,6 +65,7 @@ class ProfileManager {
                 if (data.success) {
                     this.currentUserData = data.user;
                     this.populateProfileForm();
+                    this.loadNotificationSettings();
                 } else {
                     throw new Error(data.message || 'Failed to load user data');
                 }
@@ -89,6 +98,19 @@ class ProfileManager {
         form.phone.value = this.currentUserData.phone || '';
     }
 
+    loadNotificationSettings() {
+        const settings = notificationManager.loadSettings();
+        
+        // Imposta i checkbox in base alle impostazioni salvate
+        const types = ['success', 'info', 'warning', 'error'];
+        types.forEach(type => {
+            const checkbox = document.getElementById(`${type}-notifications`);
+            if (checkbox) {
+                checkbox.checked = settings[type];
+            }
+        });
+    }
+
     bindEventListeners() {
         // Edit Profile Button
         const editProfileBtn = document.querySelector('[data-action="edit-profile"]');
@@ -106,6 +128,21 @@ class ProfileManager {
                 e.preventDefault();
                 this.changePasswordModal.show();
             });
+        }
+
+        // Notification Settings Button
+        const notificationSettingsBtn = document.querySelector('[data-action="notification-settings"]');
+        if (notificationSettingsBtn) {
+            notificationSettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (this.notificationSettingsModal) {
+                    this.notificationSettingsModal.show();
+                } else {
+                    console.error('Notification settings modal not initialized');
+                }
+            });
+        } else {
+            console.error('Notification settings button not found');
         }
 
         // Logout Button
@@ -132,6 +169,15 @@ class ProfileManager {
             changePasswordForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await this.handlePasswordChange(e.target);
+            });
+        }
+
+        // Notification Settings Form
+        const notificationSettingsForm = document.getElementById('notification-settings-form');
+        if (notificationSettingsForm) {
+            notificationSettingsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleNotificationSettings(e.target);
             });
         }
     }
@@ -199,6 +245,24 @@ class ProfileManager {
         }
     }
 
+    async handleNotificationSettings(form) {
+        try {
+            const settings = {
+                success: document.getElementById('success-notifications').checked,
+                info: document.getElementById('info-notifications').checked,
+                warning: document.getElementById('warning-notifications').checked,
+                error: document.getElementById('error-notifications').checked
+            };
+
+            notificationManager.saveSettings(settings);
+            await notificationManager.createNotification('success', 'Impostazioni notifiche salvate');
+            this.notificationSettingsModal.hide();
+        } catch (error) {
+            console.error('Error saving notification settings:', error);
+            await notificationManager.createNotification('error', 'Errore durante il salvataggio delle impostazioni');
+        }
+    }
+
     async handleLogout() {
         try {
             await AuthService.logout();
@@ -212,3 +276,4 @@ class ProfileManager {
 }
 
 export const profileManager = new ProfileManager();
+profileManager.init();
