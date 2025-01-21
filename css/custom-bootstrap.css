@@ -416,3 +416,18 @@ body {
 #product-quantity {
     -moz-appearance: textfield;
 }
+
+/* Profile page styles */
+.hover-bg:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+.hover-bg {
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.hover-bg i {
+    color: #6c757d;
+}

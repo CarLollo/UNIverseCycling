@@ -14,6 +14,7 @@ $templateParams = [
         "js/modules/categories.js",
         "js/modules/search.js",
         "js/modules/orders.js",
+        "js/modules/profile.js",
         "js/main.js"
     ]
 ];

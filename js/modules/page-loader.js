@@ -4,6 +4,7 @@ import { cartManager } from './cart.js';
 import { searchManager } from './search.js';
 import { AuthService } from '../services/auth.service.js';
 import { authManager } from './auth.js';
+import { profileManager } from './profile.js';
 
 export class PageLoader {
     constructor() {
@@ -75,6 +76,17 @@ export class PageLoader {
                 }
                 cartManager.loadCart();
                 cartManager.showCart();
+            }
+        });
+
+        this.pages.set('profile', {
+            url: '/UNIverseCycling/pages/profile.php',
+            onLoad: () => {
+                if (!AuthService.isAuthenticated()) {
+                    this.loadPage('login');
+                    return;
+                }
+                profileManager.init();
             }
         });
     }
