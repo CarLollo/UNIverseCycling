@@ -4,6 +4,8 @@ export class APIService {
     static async request(endpoint, options = {}) {
         try {
             const url = `${this.BASE_URL}${endpoint}`;
+            //console.log('Making request to:', url);
+            
             const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -11,16 +13,44 @@ export class APIService {
                 },
                 ...options
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             
             const data = await response.json();
-            console.log('API Response:', data);
+            //console.log('API Response:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            }
+            
             return data;
         } catch (error) {
             console.error('API Request Error:', error);
+            throw error;
+        }
+    }
+
+    static async post(endpoint, data = {}) {
+        console.log('API: POST request to', endpoint, 'with data:', data);
+        
+        try {
+            const response = await fetch(this.BASE_URL + endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            console.log('API: Response status:', response.status);
+            const responseData = await response.json();
+            console.log('API: Response data:', responseData);
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'API request failed');
+            }
+
+            return responseData;
+        } catch (error) {
+            console.error('API: Error in POST request:', error);
             throw error;
         }
     }
@@ -57,31 +87,20 @@ export class APIService {
     }
 
     static async addToCart(productId, quantity = 1) {
-        return this.request('/cart.php?action=add', {
-            method: 'POST',
-            body: JSON.stringify({ productId, quantity })
-        });
+        return this.post('/cart.php?action=add', { productId, quantity });
     }
 
     static async removeFromCart(productId) {
-        return this.request('/cart.php?action=remove', {
-            method: 'POST',
-            body: JSON.stringify({ productId })
-        });
+        return this.post('/cart.php?action=remove', { productId });
     }
 
     static async updateCartQuantity(productId, quantity) {
-        return this.request('/cart.php?action=update', {
-            method: 'POST',
-            body: JSON.stringify({ productId, quantity })
-        });
+        return this.post('/cart.php?action=update', { productId, quantity });
     }
 
     // Order endpoints
     static async createOrder() {
-        return this.request('/orders.php?action=create', {
-            method: 'POST'
-        });
+        return this.post('/orders.php?action=create', {});
     }
 
     static async getOrders() {

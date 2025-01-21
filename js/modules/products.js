@@ -2,7 +2,6 @@ import { APIService } from '../services/api-service.js';
 
 export class ProductsManager {
     constructor() {
-        console.log('ProductsManager constructor');
         // Cache dei prodotti
         this.products = new Map();
         this.selectedColor = null;
@@ -11,9 +10,7 @@ export class ProductsManager {
     }
 
     init() {
-        console.log('ProductsManager init');
         this.productsContainer = document.querySelector('.products-container');
-        console.log('Products container:', this.productsContainer);
         this.setupEventListeners();
     }
 
@@ -45,9 +42,12 @@ export class ProductsManager {
         } else if (action === 'category' && id) {
             this.loadCategoryProducts(id);
         } else if (action === 'search') {
+            // La ricerca viene gestita dal SearchManager
             const query = params.get('query');
             if (query) {
-                this.loadSearchResults(query);
+                import('./search.js').then(module => {
+                    module.searchManager.performSearch(query);
+                });
             }
         } else {
             this.loadNewArrivals();
@@ -67,7 +67,6 @@ export class ProductsManager {
     }
 
     async loadNewArrivals() {
-        console.log('Loading new arrivals...');
         if (!this.productsContainer) {
             console.error('Products container not found!');
             return;
@@ -79,7 +78,6 @@ export class ProductsManager {
 
             // Carica i nuovi arrivi
             const products = await APIService.getNewArrivals();
-            console.log(products);
             
             // Salva nella cache
             products.forEach(product => {
@@ -113,28 +111,6 @@ export class ProductsManager {
         } catch (error) {
             console.error('Error loading category products:', error);
             this.showError('Error loading category products. Please try again later.');
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    async loadSearchResults(query) {
-        if (!this.productsContainer) return;
-
-        try {
-            this.showLoading();
-            this.currentView = 'search';
-
-            const products = await APIService.searchProducts(query);
-            
-            products.forEach(product => {
-                this.products.set(product.product_id, product);
-            });
-            
-            this.productsContainer.innerHTML = this.renderProductsGrid(products);
-        } catch (error) {
-            console.error('Error loading search results:', error);
-            this.showError('Error loading search results. Please try again later.');
         } finally {
             this.hideLoading();
         }
@@ -267,7 +243,9 @@ export class ProductsManager {
             case 'search':
                 const query = new URLSearchParams(window.location.search).get('query');
                 if (query) {
-                    this.loadSearchResults(query);
+                    import('./search.js').then(module => {
+                        module.searchManager.performSearch(query);
+                    });
                 }
                 break;
             default:

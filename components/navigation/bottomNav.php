@@ -8,8 +8,11 @@
                 </a>
             </div>
             <div class="col text-center">
-                <a href="#" class="nav-link" data-page="cart">
+                <a href="#" class="nav-link position-relative" data-page="cart">
                     <i class="bi bi-bag"></i>
+                    <span class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger cart-badge" style="display: none;">
+                        0
+                    </span>
                     <span class="d-block small">Cart</span>
                 </a>
             </div>

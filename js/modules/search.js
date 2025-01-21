@@ -8,7 +8,6 @@ export class SearchManager {
     }
 
     init() {
-        console.log('Initializing SearchManager...');
         this.searchInput = document.querySelector('.search-input');
         
         if (this.searchInput) {
@@ -47,8 +46,22 @@ export class SearchManager {
             url.searchParams.set('query', query);
             history.pushState({ action: 'search', query }, '', url);
 
-            // Usa il ProductsManager per mostrare i risultati
-            productsManager.loadSearchResults(query);
+            // Mostra il loading
+            productsManager.showLoading();
+            
+            // Esegui la ricerca
+            const products = await APIService.searchProducts(query);
+            
+            // Aggiorna la cache dei prodotti
+            products.forEach(product => {
+                productsManager.products.set(product.product_id, product);
+            });
+            
+            // Aggiorna la vista
+            const container = document.querySelector('.products-container');
+            if (container) {
+                container.innerHTML = productsManager.renderProductsGrid(products);
+            }
         } catch (error) {
             console.error('Search error:', error);
             const container = document.querySelector('.products-container');
@@ -59,6 +72,8 @@ export class SearchManager {
                     </div>
                 `;
             }
+        } finally {
+            productsManager.hideLoading();
         }
     }
 }

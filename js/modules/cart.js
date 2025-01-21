@@ -34,7 +34,7 @@ export class CartManager {
 
     async addToCart(productId) {
         if (!AuthService.isAuthenticated()) {
-            window.location.href = '/pages/auth/login.php';
+            window.location.href = '/UNIverseCycling/?page=login&redirect=cart';
             return;
         }
 
@@ -74,7 +74,7 @@ export class CartManager {
             this.cartContainer.innerHTML = `
                 <div class="text-center py-4">
                     <p class="mb-3">Please login to view your cart</p>
-                    <a href="/pages/auth/login.php" class="btn btn-primary">Login</a>
+                    <a href="/UNIverseCycling/?page=login&redirect=cart" class="btn btn-primary">Login</a>
                 </div>
             `;
             return;
@@ -114,23 +114,42 @@ export class CartManager {
     }
 
     renderCartItem(item) {
+        const imagePath = item.image_path.startsWith('/') 
+            ? `/UNIverseCycling${item.image_path}`
+            : `/UNIverseCycling/${item.image_path}`;
+
         return `
-            <div class="card mb-3">
+            <div class="card mb-3 cart-item" data-product-id="${item.product_id}">
                 <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="${item.image}" class="img-fluid rounded-start" alt="${item.name}">
+                    <div class="col-4">
+                        <img src="${imagePath}" 
+                             class="img-fluid rounded-start" 
+                             alt="${item.name}"
+                             style="object-fit: cover; height: 100%;">
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-8">
                         <div class="card-body">
-                            <h5 class="card-title">${item.name}</h5>
-                            <p class="card-text">
-                                Price: €${item.price.toFixed(2)}<br>
-                                Quantity: ${item.quantity}
-                            </p>
-                            <button class="btn btn-danger btn-sm" 
-                                    onclick="cartManager.removeFromCart(${item.id})">
-                                Remove
-                            </button>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title">${item.name}</h5>
+                                <button class="btn btn-link text-danger remove-item" 
+                                        onclick="cartManager.removeFromCart(${item.product_id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <p class="card-text">€${parseFloat(item.price).toFixed(2)}</p>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-outline-secondary btn-sm me-2" 
+                                        onclick="cartManager.updateQuantity(${item.product_id}, ${item.quantity - 1})"
+                                        ${item.quantity <= 1 ? 'disabled' : ''}>
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <span class="quantity">${item.quantity}</span>
+                                <button class="btn btn-outline-secondary btn-sm ms-2" 
+                                        onclick="cartManager.updateQuantity(${item.product_id}, ${item.quantity + 1})"
+                                        ${item.quantity >= item.stock ? 'disabled' : ''}>
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -140,16 +159,39 @@ export class CartManager {
 
     updateCartBadge() {
         const badge = document.querySelector('.cart-badge');
-        if (badge) {
-            const itemCount = this.cartItems.reduce((sum, item) => sum + item.quantity, 0);
-            badge.textContent = itemCount;
-            badge.style.display = itemCount > 0 ? 'block' : 'none';
+        if (!badge) return;
+
+        if (this.cartItems.length > 0) {
+            badge.style.display = 'block';
+            badge.textContent = this.cartItems.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    async updateQuantity(productId, newQuantity) {
+        if (newQuantity < 1) return;
+
+        try {
+            await APIService.request('/cart.php?action=update', {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    productId,
+                    quantity: newQuantity
+                })
+            });
+            
+            await this.loadCart();
+            this.showCart();
+        } catch (error) {
+            console.error('Error updating quantity:', error);
+            this.showError('Error updating quantity');
         }
     }
 
     async checkout() {
         if (!AuthService.isAuthenticated()) {
-            window.location.href = '/pages/auth/login.php';
+            window.location.href = '/UNIverseCycling/?page=login&redirect=cart';
             return;
         }
 
@@ -169,47 +211,11 @@ export class CartManager {
     }
 
     showSuccess(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-success border-0';
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        const container = document.querySelector('.toast-container');
-        if (container) {
-            container.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-        }
+        console.log('Success:', message);
     }
 
     showError(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-danger border-0';
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        const container = document.querySelector('.toast-container');
-        if (container) {
-            container.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-        }
+        console.error('Error:', message);
     }
 }
 

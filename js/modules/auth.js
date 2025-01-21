@@ -1,30 +1,53 @@
 import { AuthService } from '../services/auth.service.js';
 
+// Esporta la classe AuthManager
 export class AuthManager {
     constructor() {
+        console.log('Auth manager initialized');
         this.init();
     }
 
     init() {
         this.bindLoginForm();
         this.bindRegisterForm();
-        this.bindLogoutButton();
-        this.updateAuthUI();
     }
 
     bindLoginForm() {
         const loginForm = document.getElementById('login-form');
+        console.log('Form trovato:', !!loginForm);
+        
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const email = loginForm.querySelector('[name="email"]').value;
-                const password = loginForm.querySelector('[name="password"]').value;
-
+                console.log('Form submitted');
+                
+                const submitButton = loginForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                this.clearError();
+                
                 try {
-                    await AuthService.login(email, password);
-                    window.location.href = '/';
+                    const email = loginForm.querySelector('[name="email"]').value;
+                    const password = loginForm.querySelector('[name="password"]').value;
+                    console.log('Dati form:', { email });
+                    
+                    const response = await AuthService.login(email, password);
+                    console.log('Risposta login:', response);
+                    
+                    if (response.success) {
+                        console.log('Login success, checking auth...');
+                        // Redirect only after confirming data is stored
+                        if (AuthService.isAuthenticated()) {
+                            console.log('Auth confirmed, redirecting...');
+                            window.location.href = '?page=home';
+                        } else {
+                            throw new Error('Authentication failed after login');
+                        }
+                    }
                 } catch (error) {
-                    this.showError(error.message);
+                    console.error('Form error:', error);
+                    this.showError(error.message || 'Login failed');
+                } finally {
+                    submitButton.disabled = false;
                 }
             });
         }
@@ -35,50 +58,50 @@ export class AuthManager {
         if (registerForm) {
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const formData = new FormData(registerForm);
-                const userData = Object.fromEntries(formData.entries());
-
+                
+                const submitButton = registerForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                this.clearError();
+                
                 try {
-                    await AuthService.register(userData);
-                    window.location.href = '/pages/auth/login.php?registered=true';
+                    const formData = new FormData(registerForm);
+                    const data = {
+                        email: formData.get('email'),
+                        password: formData.get('password'),
+                        firstName: formData.get('firstName'),
+                        lastName: formData.get('lastName'),
+                        phone: formData.get('phone')
+                    };
+                    
+                    const response = await AuthService.register(data);
+                    if (response.success) {
+                        window.location.href = '?page=login';
+                    }
                 } catch (error) {
-                    this.showError(error.message);
+                    console.error('Registration error:', error);
+                    this.showError(error.message || 'Registration failed');
+                } finally {
+                    submitButton.disabled = false;
                 }
             });
         }
     }
 
-    bindLogoutButton() {
-        const logoutBtn = document.querySelector('[data-action="logout"]');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                AuthService.logout();
-            });
+    showError(message) {
+        const errorDiv = document.querySelector('.auth-error');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
         }
     }
 
-    updateAuthUI() {
-        const isAuthenticated = AuthService.isAuthenticated();
-        const user = AuthService.getCurrentUser();
-
-        document.body.classList.toggle('is-authenticated', isAuthenticated);
-        
-        const userNameElements = document.querySelectorAll('[data-user-name]');
-        userNameElements.forEach(el => {
-            if (user) {
-                el.textContent = user.name;
-            }
-        });
-    }
-
-    showError(message) {
-        const errorContainer = document.querySelector('.auth-error');
-        if (errorContainer) {
-            errorContainer.textContent = message;
-            errorContainer.style.display = 'block';
+    clearError() {
+        const errorDiv = document.querySelector('.auth-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
         }
     }
 }
 
+// Esporta l'istanza
 export const authManager = new AuthManager();
