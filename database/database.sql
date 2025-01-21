@@ -130,7 +130,6 @@ CREATE TABLE order_product (
     FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
 );
 
-
 -- Insert tags
 INSERT INTO tag (name) VALUES 
 ('newarrivals'),

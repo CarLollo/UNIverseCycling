@@ -1,7 +1,6 @@
 import { productsManager } from './products.js';
 import { categoriesManager } from './categories.js';
 import { cartManager } from './cart.js';
-import { ordersManager } from './orders.js';
 import { searchManager } from './search.js';
 import { AuthService } from '../services/auth.service.js';
 import { authManager } from './auth.js';

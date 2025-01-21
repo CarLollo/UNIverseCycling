@@ -80,26 +80,28 @@ class ProductQueries {
     }
 
     public function getProductById($productId) {
-        $query = "
-            SELECT p.product_id, p.name, p.description, p.price, p.image_path, p.stock
-            FROM product p
-            WHERE p.product_id = ?";
-
+        error_log("Getting product by ID: $productId");
+        $query = "SELECT * FROM product WHERE product_id = ?";
+        error_log("Query: $query");
+        
         try {
             $stmt = $this->mysqli->prepare($query);
             if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->mysqli->error);
+                error_log("Failed to prepare query: " . $this->mysqli->error);
+                return null;
             }
 
             $stmt->bind_param("i", $productId);
-            $stmt->execute();
-
-            if ($stmt->error) {
-                throw new Exception("Execute failed: " . $stmt->error);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute query: " . $stmt->error);
+                return null;
             }
 
             $result = $stmt->get_result();
-            return $result->fetch_assoc();
+            $product = $result->fetch_assoc();
+            error_log("Product found: " . ($product ? json_encode($product) : "null"));
+            
+            return $product;
         } catch (Exception $e) {
             error_log("Error in getProductById: " . $e->getMessage());
             return null;
@@ -107,25 +109,88 @@ class ProductQueries {
     }
 
     public function getCartItems($userEmail) {
-        $query = "SELECT c.product_id, c.quantity, p.name, p.price, p.image_path
-                 FROM cart c
-                 JOIN product p ON c.product_id = p.product_id
-                 WHERE c.email = ?";
-
+        error_log("Getting cart items for user: $userEmail");
+        
         try {
-            $stmt = $this->mysqli->prepare($query);
+            // Prima otteniamo lo user_id dall'email
+            $userQuery = "SELECT id FROM users WHERE email = ?";
+            $stmt = $this->mysqli->prepare($userQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare user query: " . $this->mysqli->error);
+                return [];
+            }
+
             $stmt->bind_param("s", $userEmail);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                error_log("Failed to execute user query: " . $stmt->error);
+                return [];
+            }
 
             $result = $stmt->get_result();
-            return $result->fetch_all(MYSQLI_ASSOC);
+            if ($result->num_rows === 0) {
+                error_log("User not found: $userEmail");
+                return [];
+            }
+
+            $user = $result->fetch_assoc();
+            $userId = $user['id'];
+
+            // Ora prendiamo il carrello dell'utente
+            $query = "
+                SELECT 
+                    p.*,
+                    cp.quantity,
+                    cp.added_date
+                FROM cart c
+                JOIN cart_product cp ON c.cart_id = cp.cart_id
+                JOIN product p ON cp.product_id = p.product_id
+                WHERE c.user_id = ?
+                ORDER BY cp.added_date DESC
+            ";
+
+            error_log("Cart query: " . $query);
+            
+            $stmt = $this->mysqli->prepare($query);
+            if (!$stmt) {
+                error_log("Failed to prepare cart query: " . $this->mysqli->error);
+                return [];
+            }
+
+            $stmt->bind_param("i", $userId);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute cart query: " . $stmt->error);
+                return [];
+            }
+
+            $result = $stmt->get_result();
+            $items = [];
+            while ($row = $result->fetch_assoc()) {
+                $items[] = [
+                    'product_id' => $row['product_id'],
+                    'name' => $row['name'],
+                    'description' => $row['description'],
+                    'price' => $row['price'],
+                    'image_path' => $row['image_path'],
+                    'quantity' => $row['quantity'],
+                    'added_date' => $row['added_date']
+                ];
+            }
+
+            error_log("Found " . count($items) . " items in cart");
+            return $items;
         } catch (Exception $e) {
-            error_log("Error in getCartItems: " . $e->getMessage());
+            error_log("Error getting cart items: " . $e->getMessage());
             return [];
         }
     }
 
     public function updateCartItemQuantity($userEmail, $productId, $quantity) {
+        // First check if the product has enough stock
+        $product = $this->getProductById($productId);
+        if (!$product || $product['stock'] < $quantity) {
+            return false;
+        }
+
         $query = "UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?";
         try {
             $stmt = $this->mysqli->prepare($query);
@@ -137,14 +202,71 @@ class ProductQueries {
         }
     }
 
-    public function removeFromCart($userEmail, $productId) {
-        $query = "DELETE FROM cart WHERE email = ? AND product_id = ?";
+    public function removeFromCart($productId, $userEmail) {
         try {
-            $stmt = $this->mysqli->prepare($query);
-            $stmt->bind_param("si", $userEmail, $productId);
-            return $stmt->execute();
+            // Prima otteniamo lo user_id dall'email
+            $userQuery = "SELECT id FROM users WHERE email = ?";
+            $stmt = $this->mysqli->prepare($userQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare user query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("s", $userEmail);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute user query: " . $stmt->error);
+                return false;
+            }
+
+            $result = $stmt->get_result();
+            if ($result->num_rows === 0) {
+                error_log("User not found: $userEmail");
+                return false;
+            }
+
+            $user = $result->fetch_assoc();
+            $userId = $user['id'];
+
+            // Ora otteniamo il cart_id
+            $cartQuery = "SELECT cart_id FROM cart WHERE user_id = ?";
+            $stmt = $this->mysqli->prepare($cartQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare cart query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("i", $userId);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute cart query: " . $stmt->error);
+                return false;
+            }
+
+            $result = $stmt->get_result();
+            if ($result->num_rows === 0) {
+                error_log("Cart not found for user: $userEmail");
+                return false;
+            }
+
+            $cart = $result->fetch_assoc();
+            $cartId = $cart['cart_id'];
+
+            // Rimuoviamo il prodotto dal carrello
+            $removeQuery = "DELETE FROM cart_product WHERE cart_id = ? AND product_id = ?";
+            $stmt = $this->mysqli->prepare($removeQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare remove query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("ii", $cartId, $productId);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute remove query: " . $stmt->error);
+                return false;
+            }
+
+            return true;
         } catch (Exception $e) {
-            error_log("Error in removeFromCart: " . $e->getMessage());
+            error_log("Error removing from cart: " . $e->getMessage());
             return false;
         }
     }
@@ -167,31 +289,124 @@ class ProductQueries {
     }
 
     public function addToCart($userEmail, $productId, $quantity = 1) {
-        // Check if item already exists in cart
-        $checkQuery = "SELECT quantity FROM cart WHERE email = ? AND product_id = ?";
-
+        error_log("Adding to cart - Email: $userEmail, Product: $productId, Quantity: $quantity");
+        
+        // First get user_id from email
+        $userQuery = "SELECT id FROM users WHERE email = ?";
         try {
+            $stmt = $this->mysqli->prepare($userQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare user query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("s", $userEmail);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute user query: " . $stmt->error);
+                return false;
+            }
+
+            $result = $stmt->get_result();
+            if ($result->num_rows === 0) {
+                error_log("User not found with email: $userEmail");
+                return false;
+            }
+
+            $user = $result->fetch_assoc();
+            $userId = $user['id'];
+            error_log("Found user ID: $userId");
+
+            // Check if user has a cart
+            $cartQuery = "SELECT cart_id FROM cart WHERE user_id = ?";
+            $stmt = $this->mysqli->prepare($cartQuery);
+            if (!$stmt) {
+                error_log("Failed to prepare cart query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("i", $userId);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute cart query: " . $stmt->error);
+                return false;
+            }
+
+            $result = $stmt->get_result();
+            
+            // If user doesn't have a cart, create one
+            if ($result->num_rows === 0) {
+                error_log("Creating new cart for user: $userId");
+                $createCartQuery = "INSERT INTO cart (user_id) VALUES (?)";
+                $stmt = $this->mysqli->prepare($createCartQuery);
+                if (!$stmt) {
+                    error_log("Failed to prepare create cart query: " . $this->mysqli->error);
+                    return false;
+                }
+
+                $stmt->bind_param("i", $userId);
+                if (!$stmt->execute()) {
+                    error_log("Failed to execute create cart query: " . $stmt->error);
+                    return false;
+                }
+
+                $cartId = $this->mysqli->insert_id;
+            } else {
+                $cart = $result->fetch_assoc();
+                $cartId = $cart['cart_id'];
+            }
+            error_log("Using cart ID: $cartId");
+
+            // Check if product exists in cart
+            $checkQuery = "SELECT quantity FROM cart_product WHERE cart_id = ? AND product_id = ?";
             $stmt = $this->mysqli->prepare($checkQuery);
-            $stmt->bind_param("si", $userEmail, $productId);
-            $stmt->execute();
+            if (!$stmt) {
+                error_log("Failed to prepare check query: " . $this->mysqli->error);
+                return false;
+            }
+
+            $stmt->bind_param("ii", $cartId, $productId);
+            if (!$stmt->execute()) {
+                error_log("Failed to execute check query: " . $stmt->error);
+                return false;
+            }
+
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
                 // Update existing quantity
                 $row = $result->fetch_assoc();
                 $newQuantity = $row['quantity'] + $quantity;
+                error_log("Updating quantity from {$row['quantity']} to $newQuantity");
 
-                $updateQuery = "UPDATE cart SET quantity = ? WHERE email = ? AND product_id = ?";
+                $updateQuery = "UPDATE cart_product SET quantity = ? WHERE cart_id = ? AND product_id = ?";
                 $stmt = $this->mysqli->prepare($updateQuery);
-                $stmt->bind_param("isi", $newQuantity, $userEmail, $productId);
-                return $stmt->execute();
+                if (!$stmt) {
+                    error_log("Failed to prepare update query: " . $this->mysqli->error);
+                    return false;
+                }
+
+                $stmt->bind_param("iii", $newQuantity, $cartId, $productId);
+                if (!$stmt->execute()) {
+                    error_log("Failed to execute update query: " . $stmt->error);
+                    return false;
+                }
             } else {
-                // Insert new item
-                $insertQuery = "INSERT INTO cart (email, product_id, quantity) VALUES (?, ?, ?)";
+                // Insert new product
+                error_log("Adding new product to cart");
+                $insertQuery = "INSERT INTO cart_product (cart_id, product_id, quantity) VALUES (?, ?, ?)";
                 $stmt = $this->mysqli->prepare($insertQuery);
-                $stmt->bind_param("sii", $userEmail, $productId, $quantity);
-                return $stmt->execute();
+                if (!$stmt) {
+                    error_log("Failed to prepare insert query: " . $this->mysqli->error);
+                    return false;
+                }
+
+                $stmt->bind_param("iii", $cartId, $productId, $quantity);
+                if (!$stmt->execute()) {
+                    error_log("Failed to execute insert query: " . $stmt->error);
+                    return false;
+                }
             }
+
+            return true;
         } catch (Exception $e) {
             error_log("Error in addToCart: " . $e->getMessage());
             return false;

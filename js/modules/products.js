@@ -134,73 +134,89 @@ export class ProductsManager {
             : `/UNIverseCycling/${product.image_path}`;
 
         return `
-            <div class="col">
-                <div class="product-card h-100" 
-                     data-product-id="${product.product_id}"
-                     role="button"
-                     tabindex="0">
-                    <div class="product-image-wrapper">
-                        <img src="${imagePath}" 
-                             class="product-image" 
-                             alt="${product.name}"
-                             loading="lazy"
-                             onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
-                    </div>
-                    <div class="product-info p-3">
-                        <h4 class="product-title h6 mb-2">${product.name}</h4>
-                        <p class="product-price mb-0">€${parseFloat(product.price).toFixed(2)}</p>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 product-card" data-product-id="${product.product_id}" role="button">
+                    <img src="${imagePath}" 
+                         class="card-img-top" 
+                         alt="${product.name}"
+                         style="height: 200px; object-fit: cover;"
+                         onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="card-text text-primary mb-0">€${parseFloat(product.price).toFixed(2)}</p>
                     </div>
                 </div>
             </div>
         `;
     }
 
-    async handleProductClick(productId) {
-        try {
-            this.showLoading();
-            
-            let product = this.products.get(productId);
-            if (!product) {
-                product = await APIService.getProductDetails(productId);
-                this.products.set(productId, product);
-            }
-            
-            await this.showProductDetails(productId);
-        } catch (error) {
-            console.error('Error handling product click:', error);
-            this.showError('Error loading product details. Please try again later.');
-        } finally {
-            this.hideLoading();
-        }
+    handleProductClick(productId) {
+        this.showProductDetails(productId);
     }
 
     async showProductDetails(productId, updateHistory = true) {
         try {
-            let product = this.products.get(productId);
-            if (!product) {
-                product = await APIService.getProductDetails(productId);
-                if (!product) {
-                    throw new Error('Product not found');
-                }
-                this.products.set(productId, product);
+            const product = await APIService.getProductDetails(productId);
+            
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) return;
+
+            mainContent.innerHTML = `
+                <div class="container mt-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}" 
+                                 class="img-fluid rounded" 
+                                 alt="${product.name}">
+                        </div>
+                        <div class="col-md-6">
+                            <h1>${product.name}</h1>
+                            <p class="h3 text-primary">€${parseFloat(product.price).toFixed(2)}</p>
+                            <p class="my-4">${product.description || 'No description available.'}</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Quantity:</label>
+                                <div class="input-group" style="width: 140px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decrease-quantity">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="number" id="product-quantity" class="form-control text-center" 
+                                           value="1" min="1" max="${product.stock || 10}">
+                                    <button class="btn btn-outline-secondary" type="button" id="increase-quantity">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary w-100" id="add-to-cart-btn">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Aggiungi event listeners dopo aver creato gli elementi
+            const decreaseBtn = document.getElementById('decrease-quantity');
+            const increaseBtn = document.getElementById('increase-quantity');
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+            if (decreaseBtn) {
+                decreaseBtn.addEventListener('click', () => this.updateQuantity(-1));
+            }
+            if (increaseBtn) {
+                increaseBtn.addEventListener('click', () => this.updateQuantity(1));
+            }
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', () => this.handleAddToCart(productId));
             }
 
             if (updateHistory) {
                 const url = new URL(window.location);
                 url.searchParams.set('action', 'product');
                 url.searchParams.set('id', productId);
-                history.pushState({ action: 'product', id: productId }, '', url);
+                window.history.pushState({}, '', url);
             }
-
-            const mainContent = document.querySelector('.main-content');
-            if (!mainContent) {
-                throw new Error('Main content container not found');
-            }
-            
-            mainContent.innerHTML = this.renderProductDetails(product);
-            
-            // Nascondi altri contenuti
-            this.hideOtherContent();
             
         } catch (error) {
             console.error('Error loading product details:', error);
@@ -211,6 +227,80 @@ export class ProductsManager {
                         <div class="alert alert-danger">Error loading product details. Please try again.</div>
                     </div>
                 `;
+            }
+        }
+    }
+
+    updateQuantity(change) {
+        const input = document.getElementById('product-quantity');
+        if (!input) return;
+
+        const currentValue = parseInt(input.value) || 1;
+        const maxValue = parseInt(input.max) || 10;
+        const newValue = Math.max(1, Math.min(maxValue, currentValue + change));
+        input.value = newValue;
+    }
+
+    async handleAddToCart(productId) {
+        try {
+            const quantityInput = document.getElementById('product-quantity');
+            if (!quantityInput) {
+                throw new Error('Quantity input not found');
+            }
+
+            const quantity = parseInt(quantityInput.value);
+            if (isNaN(quantity) || quantity < 1) {
+                throw new Error('Please enter a valid quantity');
+            }
+
+            console.log('Adding to cart:', { productId, quantity });
+            try {
+                await APIService.addToCart(productId, quantity);
+                console.log('Product added to cart successfully');
+                
+                // Aggiorna il carrello
+                if (window.cartManager) {
+                    console.log('Updating cart...');
+                    await window.cartManager.loadCart();
+                } else {
+                    console.error('Cart manager not found');
+                }
+
+                // Mostra messaggio di successo solo dopo che tutto è andato bene
+                const toastContainer = document.querySelector('.toast-container');
+                if (toastContainer) {
+                    const toast = document.createElement('div');
+                    toast.className = 'toast show';
+                    toast.textContent = 'Product added to cart successfully';
+                    toastContainer.appendChild(toast);
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                const toastContainer = document.querySelector('.toast-container');
+                if (toastContainer) {
+                    const toast = document.createElement('div');
+                    toast.className = 'toast show error';
+                    toast.textContent = error.message || 'Failed to add product to cart';
+                    toastContainer.appendChild(toast);
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                }
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            const toastContainer = document.querySelector('.toast-container');
+            if (toastContainer) {
+                const toast = document.createElement('div');
+                toast.className = 'toast show error';
+                toast.textContent = error.message || 'Failed to add product to cart';
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
             }
         }
     }
@@ -267,69 +357,6 @@ export class ProductsManager {
         });
     }
 
-    renderProductDetails(product) {
-        const imagePath = product.image_path.startsWith('/') 
-            ? `/UNIverseCycling${product.image_path}`
-            : `/UNIverseCycling/${product.image_path}`;
-
-        // Determina il link back appropriato
-        const backLink = this.getBackLink();
-
-        return `
-            <div class="container mt-4">
-                <div class="d-flex align-items-center mb-4">
-                    <a href="${backLink.url}" class="btn btn-link text-decoration-none p-0 me-3">
-                        <i class="bi bi-arrow-left h5 mb-0"></i>
-                        <span class="ms-2">${backLink.text}</span>
-                    </a>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-4 mb-md-0">
-                        <img src="${imagePath}" 
-                             class="img-fluid rounded shadow-sm" 
-                             alt="${product.name}"
-                             onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <h1 class="h2 mb-3">${product.name}</h1>
-                        <p class="h3 text-primary mb-4">€${parseFloat(product.price).toFixed(2)}</p>
-                        
-                        <div class="mb-4">
-                            <h5 class="mb-3">Description</h5>
-                            <p class="text-muted">${product.description || 'No description available.'}</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <p class="text-muted mb-2">Available: ${product.stock || 10}</p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h5 class="mb-3">Color</h5>
-                            <div class="d-flex gap-2">
-                                ${this.renderColorOptions()}
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Quantity:</label>
-                            <div class="input-group" style="width: 140px;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="this.nextElementSibling.stepDown()">-</button>
-                                <input type="number" class="form-control text-center" value="1" min="1" max="${product.stock || 10}">
-                                <button class="btn btn-outline-secondary" type="button" onclick="this.previousElementSibling.stepUp()">+</button>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-primary w-100 py-2" onclick="productsManager.addToCart('${product.product_id}')">
-                            <i class="bi bi-cart-plus me-2"></i>Add to cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
     getBackLink() {
         const params = new URLSearchParams(window.location.search);
         const searchQuery = params.get('query');
@@ -353,31 +380,67 @@ export class ProductsManager {
         }
     }
 
-    renderColorOptions() {
-        const colors = [
-            { name: 'red', class: 'bg-danger' },
-            { name: 'blue', class: 'bg-primary' },
-            { name: 'green', class: 'bg-success' },
-            { name: 'cyan', class: 'bg-info' }
-        ];
+    async addToCart(productId) {
+        try {
+            const quantityInput = document.getElementById(`product-quantity-${productId}`);
+            if (!quantityInput) {
+                throw new Error('Quantity input not found');
+            }
 
-        return colors.map(color => `
-            <button class="color-circle ${color.class} rounded-circle border-0" 
-                    style="width: 30px; height: 30px; cursor: pointer; ${this.selectedColor === color.name ? 'outline: 2px solid var(--primary-color); outline-offset: 2px;' : ''}" 
-                    onclick="productsManager.selectColor('${color.name}')"
-                    data-color="${color.name}"
-                    title="${color.name.charAt(0).toUpperCase() + color.name.slice(1)}">
-            </button>
-        `).join('');
-    }
+            const quantity = parseInt(quantityInput.value);
+            if (isNaN(quantity) || quantity < 1) {
+                throw new Error('Invalid quantity');
+            }
 
-    selectColor(color) {
-        this.selectedColor = color;
-        document.querySelectorAll('.color-circle').forEach(circle => {
-            const isSelected = circle.dataset.color === color;
-            circle.style.outline = isSelected ? '2px solid var(--primary-color)' : 'none';
-            circle.style.outlineOffset = isSelected ? '2px' : '0';
-        });
+            await APIService.addToCart(productId, quantity);
+            
+            // Refresh cart badge
+            const cartManager = (await import('./cart.js')).cartManager;
+            await cartManager.loadCart();
+            
+            // Show success message using Bootstrap toast
+            const toastContainer = document.querySelector('.toast-container');
+            if (toastContainer) {
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-success border-0';
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">Product added to cart successfully!</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            // Show error message using Bootstrap toast
+            const toastContainer = document.querySelector('.toast-container');
+            if (toastContainer) {
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-danger border-0';
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">Error adding product to cart: ${error.message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+        }
     }
 
     showLoading() {
@@ -417,19 +480,15 @@ export class ProductsManager {
             container.appendChild(toast);
             const bsToast = new bootstrap.Toast(toast);
             bsToast.show();
-        }
-    }
 
-    async addToCart(productId, quantity = 1) {
-        try {
-            await APIService.addToCart(productId, quantity);
-            this.showError('Product added to cart successfully!');
-        } catch (error) {
-            console.error('Error adding to cart:', error);
-            this.showError('Error adding product to cart. Please try again later.');
+            // Rimuovi il toast dopo che è stato nascosto
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
         }
     }
 }
 
-// Crea l'istanza globale
+// Esporta l'istanza e rendila globale
 export const productsManager = new ProductsManager();
+window.productsManager = productsManager;
