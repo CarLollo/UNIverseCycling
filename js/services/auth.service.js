@@ -15,6 +15,15 @@ export class AuthService {
         });
     }
 
+    static register(data) {
+        return fetch('/UNIverseCycling/api/auth/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json());
+    }
+
     static isAuthenticated() {
         return !!localStorage.getItem('token');
     }

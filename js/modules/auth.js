@@ -1,4 +1,5 @@
 import { AuthService } from '../services/auth.service.js';
+import { pageLoader } from './page-loader.js';
 
 // Esporta la classe AuthManager
 export class AuthManager {
@@ -38,10 +39,12 @@ export class AuthManager {
                         // Redirect only after confirming data is stored
                         if (AuthService.isAuthenticated()) {
                             console.log('Auth confirmed, redirecting...');
-                            window.location.href = '?page=home';
+                            pageLoader.loadPage('home');
                         } else {
                             throw new Error('Authentication failed after login');
                         }
+                    } else {
+                        throw new Error(response.message || 'Login failed');
                     }
                 } catch (error) {
                     console.error('Form error:', error);
@@ -73,9 +76,17 @@ export class AuthManager {
                         phone: formData.get('phone')
                     };
                     
+                    console.log('Sending registration data:', data);
+                    
+                    // Chiamata esplicita al metodo statico
                     const response = await AuthService.register(data);
+
+                    console.log('Registration response:', response);
+                    
                     if (response.success) {
-                        window.location.href = '?page=login';
+                        pageLoader.loadPage('login');
+                    } else {
+                        throw new Error(response.message || 'Registration failed');
                     }
                 } catch (error) {
                     console.error('Registration error:', error);
