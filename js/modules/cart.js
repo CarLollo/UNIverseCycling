@@ -25,7 +25,7 @@ export class CartManager {
         if (!AuthService.isAuthenticated()) return;
 
         try {
-            this.cartItems = await APIService.request('/cart.php?action=get');
+            this.cartItems = await APIService.getCartItems();
             this.updateCartBadge();
         } catch (error) {
             console.error('Error loading cart:', error);
@@ -39,10 +39,7 @@ export class CartManager {
         }
 
         try {
-            await APIService.request('/cart.php?action=add', {
-                method: 'POST',
-                body: JSON.stringify({ productId })
-            });
+            await APIService.addToCart(productId);
             
             await this.loadCart();
             this.showSuccess('Product added to cart');
@@ -54,11 +51,7 @@ export class CartManager {
 
     async removeFromCart(productId) {
         try {
-            await APIService.request('/cart.php?action=remove', {
-                method: 'POST',
-                body: JSON.stringify({ productId })
-            });
-            
+            await APIService.removeFromCart(productId);
             await this.loadCart();
             this.showCart();
         } catch (error) {

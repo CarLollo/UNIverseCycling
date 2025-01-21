@@ -18,7 +18,7 @@ export class CategoriesManager {
         if (!this.categoriesContainer) return;
 
         try {
-            const categories = await APIService.request('/categories.php?action=getAll');
+            const categories = await APIService.getCategories();
             this.renderCategories(categories);
         } catch (error) {
             console.error('Error loading categories:', error);
@@ -30,7 +30,7 @@ export class CategoriesManager {
         if (!this.categoriesContainer) return;
 
         try {
-            const products = await APIService.request('/products.php?action=getByCategory&id=' + categoryId);
+            const products = await APIService.getCategoryById(categoryId);
             this.renderCategoryProducts(products);
         } catch (error) {
             console.error('Error loading category products:', error);

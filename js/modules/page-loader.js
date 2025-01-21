@@ -58,6 +58,18 @@ export class PageLoader {
                 searchManager.init();
             }
         });
+
+        this.pages.set('cart', {
+            url: '/UNIverseCycling/pages/cart.php',
+            onLoad: () => {
+                if (!AuthService.isAuthenticated()) {
+                    this.loadPage('login');
+                    return;
+                }
+                cartManager.loadCart();
+                cartManager.showCart();
+            }
+        });
     }
 
     setupNavigationListeners() {
