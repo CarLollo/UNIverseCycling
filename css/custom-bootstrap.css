@@ -286,17 +286,10 @@ body {
 .cart-badge {
     position: absolute;
     top: -5px;
-    right: -5px;
-    background-color: #dc3545;
-    color: white;
-    border-radius: 50%;
+    right: -8px;
     min-width: 18px;
     height: 18px;
     font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px;
 }
 
 .cart-icon-container {
@@ -336,6 +329,24 @@ body {
 .cart-item .btn-danger {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
+}
+
+/* Back arrow */
+.back-arrow {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 1rem;
+}
+
+.back-arrow i {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.back-arrow:hover {
+    color: var(--bs-primary);
 }
 
 /* Page Visibility */

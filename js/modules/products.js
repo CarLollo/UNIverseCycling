@@ -163,6 +163,10 @@ export class ProductsManager {
 
             mainContent.innerHTML = `
                 <div class="container mt-4">
+                    <a href="javascript:history.back()" class="text-decoration-none text-dark d-inline-flex align-items-center mb-3">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        <span>Back</span>
+                    </a>
                     <div class="row">
                         <div class="col-md-6">
                             <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}" 
