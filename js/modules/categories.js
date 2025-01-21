@@ -35,9 +35,7 @@ export class CategoriesManager {
                 this.categoriesContainer.innerHTML = `
                     <div class="container py-4">
                         <div class="mb-3">
-                            <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
-                                <i class="bi bi-arrow-left me-2"></i>Back to Categories
-                            </a>
+                            ${pageLoader.getBackLink()}
                         </div>
                         <div class="text-center py-4">
                             <p class="mb-0">No products available in this category</p>
@@ -50,9 +48,7 @@ export class CategoriesManager {
             this.categoriesContainer.innerHTML = `
                 <div class="container py-4">
                     <div class="mb-4">
-                        <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Categories
-                        </a>
+                        ${pageLoader.getBackLink()}
                     </div>
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
                         ${products.map(product => window.productsManager.renderProductCard(product)).join('')}
@@ -64,9 +60,7 @@ export class CategoriesManager {
             this.categoriesContainer.innerHTML = `
                 <div class="container py-4">
                     <div class="mb-3">
-                        <a href="#" class="text-decoration-none text-dark" onclick="categoriesManager.showCategories(); return false;">
-                            <i class="bi bi-arrow-left me-2"></i>Back to Categories
-                        </a>
+                        ${pageLoader.getBackLink()}
                     </div>
                     <div class="alert alert-danger">
                         Error loading products. Please try again.
