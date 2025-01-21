@@ -5,6 +5,7 @@ import { searchManager } from './search.js';
 import { AuthService } from '../services/auth.service.js';
 import { authManager } from './auth.js';
 import { profileManager } from './profile.js';
+import { NotificationManager } from './notification-manager.js';
 
 export class PageLoader {
     constructor() {
@@ -87,6 +88,14 @@ export class PageLoader {
                     return;
                 }
                 profileManager.init();
+            }
+        });
+
+        this.pages.set('notifications', {
+            url: '/UNIverseCycling/pages/notifications.php',
+            onLoad: () => {
+                const notificationManager = new NotificationManager();
+                notificationManager.init();
             }
         });
     }

@@ -1,5 +1,6 @@
 import { APIService } from '../services/api-service.js';
 import { AuthService } from '../services/auth.service.js';
+import { notificationManager } from './notification-manager.js';
 
 export class CartManager {
     constructor() {
@@ -102,9 +103,23 @@ export class CartManager {
         try {
             await APIService.removeFromCart(productId);
             await this.loadCart();
-            this.showCart();
+            // Crea una notifica di successo
+            await notificationManager.createNotification('success', 'Prodotto rimosso dal carrello');
         } catch (error) {
-            console.error('Error removing item from cart:', error);
+            console.error('Error removing from cart:', error);
+            await notificationManager.createNotification('error', 'Errore durante la rimozione dal carrello');
+        }
+    }
+
+    async addToCart(productId, quantity = 1) {
+        try {
+            await APIService.addToCart(productId, quantity);
+            await this.loadCart();
+            // Crea una notifica di successo
+            await notificationManager.createNotification('success', 'Prodotto aggiunto al carrello');
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            await notificationManager.createNotification('error', 'Errore durante l\'aggiunta al carrello');
         }
     }
 
