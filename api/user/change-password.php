@@ -1,24 +1,30 @@
 <?php
 require_once __DIR__ . '/../../config/db_config.php';
-require_once __DIR__ . '/../../config/jwt_utils.php';
 
 header('Content-Type: application/json');
 
-// Get bearer token
-$headers = getallheaders();
-$auth_header = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-$token = str_replace('Bearer ', '', $auth_header);
-
 try {
-    // Verify token
-    $user_id = validateJWT($token);
-    if (!$user_id) {
-        throw new Exception('Invalid token');
+    // Get token from headers
+    $headers = getallheaders();
+    if (!isset($headers['Authorization'])) {
+        throw new Exception('No authorization header');
     }
 
+    $token = str_replace('Bearer ', '', $headers['Authorization']);
+    $tokenJson = json_decode(base64_decode($token), true);
+
+    if (!isset($tokenJson['email'])) {
+        throw new Exception('Invalid token format - no email found');
+    }
+
+    $userEmail = $tokenJson['email'];
+    
     // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
-    
+    if (!$data) {
+        throw new Exception('Invalid JSON input');
+    }
+
     if (!isset($data['currentPassword']) || !isset($data['newPassword'])) {
         throw new Exception('Missing required fields');
     }
@@ -28,17 +34,16 @@ try {
         throw new Exception('New password must be at least 8 characters long');
     }
 
-    // Get current user data
-    $stmt = $mysqli->prepare("SELECT password FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id);
+    // Get current user's password
+    $stmt = $mysqli->prepare("SELECT password FROM users WHERE email = ?");
+    $stmt->bind_param("s", $userEmail);
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    if ($result->num_rows === 0) {
+    $user = $result->fetch_assoc();
+
+    if (!$user) {
         throw new Exception('User not found');
     }
-
-    $user = $result->fetch_assoc();
 
     // Verify current password
     if (!password_verify($data['currentPassword'], $user['password'])) {
@@ -49,13 +54,17 @@ try {
     $hashedPassword = password_hash($data['newPassword'], PASSWORD_DEFAULT);
 
     // Update password
-    $stmt = $mysqli->prepare("UPDATE users SET password = ? WHERE id = ?");
-    $stmt->bind_param("si", $hashedPassword, $user_id);
-    
+    $stmt = $mysqli->prepare("UPDATE users SET password = ? WHERE email = ?");
+    $stmt->bind_param("ss", $hashedPassword, $userEmail);
+
     if (!$stmt->execute()) {
         throw new Exception('Failed to update password');
     }
-    
+
+    if ($stmt->affected_rows === 0) {
+        throw new Exception('No changes were made to the password');
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Password updated successfully'
