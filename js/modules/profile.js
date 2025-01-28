@@ -1,57 +1,153 @@
 import { AuthService } from '../services/auth.service.js';
-import { pageLoader } from './page-loader.js';
 import { notificationManager } from './notification-manager.js';
 
-class ProfileManager {
+export class ProfileManager {
     constructor() {
         this.editProfileModal = null;
         this.changePasswordModal = null;
         this.notificationSettingsModal = null;
         this.orderHistoryModal = null;
+        this.adminProductModal = null;
         this.currentUserData = null;
     }
 
-    init() {
-        if (!AuthService.isAuthenticated()) {
-            console.log('User not logged in, skipping profile initialization');
-            return;
-        }
-        
-        // Initialize Bootstrap modals
-        const editProfileModalEl = document.getElementById('editProfileModal');
-        const changePasswordModalEl = document.getElementById('changePasswordModal');
-        const notificationSettingsModalEl = document.getElementById('notificationSettingsModal');
-        const orderHistoryModalEl = document.getElementById('orderHistoryModal');
-        
-        if (editProfileModalEl) {
-            this.editProfileModal = new bootstrap.Modal(editProfileModalEl);
-        } else {
-            console.error('Edit profile modal not found');
-        }
-        
-        if (changePasswordModalEl) {
-            this.changePasswordModal = new bootstrap.Modal(changePasswordModalEl);
-        } else {
-            console.error('Change password modal not found');
-        }
+    async init() {
+        try {
+            if (!AuthService.isAuthenticated()) {
+                console.log('User not logged in, skipping profile initialization');
+                return;
+            }
 
-        if (notificationSettingsModalEl) {
-            this.notificationSettingsModal = new bootstrap.Modal(notificationSettingsModalEl);
-        } else {
-            console.error('Notification settings modal not found');
-        }
+            console.log('User type:', AuthService.getUserType());
+            console.log('Is admin:', AuthService.isAdmin());
 
-        if (orderHistoryModalEl) {
-            this.orderHistoryModal = new bootstrap.Modal(orderHistoryModalEl);
-        } else {
-            console.error('Order history modal not found');
-        }
+            // Rimuovi elementi admin se l'utente non è admin
+            if (!AuthService.isAdmin()) {
+                console.log('User is not admin, removing admin elements');
+                const adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => el.remove());
+            } else {
+                console.log('User is admin, keeping admin elements');
+            }
 
-        // Load user data
-        this.loadUserData();
-        
-        // Bind event listeners
-        this.bindEventListeners();
+            // Initialize modals
+            this.initializeModals();
+            
+            // Setup event listeners and load data
+            this.setupEventListeners();
+            await this.loadUserData();
+
+            // Load admin data if user is admin
+            if (AuthService.isAdmin()) {
+                await this.loadCategories();
+            }
+
+        } catch (error) {
+            console.error('Error in init:', error);
+        }
+    }
+
+    initializeModals() {
+        try {
+            // Initialize base modals
+            const editProfileEl = document.getElementById('editProfileModal');
+            const changePasswordEl = document.getElementById('changePasswordModal');
+            const notificationSettingsEl = document.getElementById('notificationSettingsModal');
+            const orderHistoryEl = document.getElementById('orderHistoryModal');
+
+            if (editProfileEl) this.editProfileModal = new bootstrap.Modal(editProfileEl);
+            if (changePasswordEl) this.changePasswordModal = new bootstrap.Modal(changePasswordEl);
+            if (notificationSettingsEl) this.notificationSettingsModal = new bootstrap.Modal(notificationSettingsEl);
+            if (orderHistoryEl) this.orderHistoryModal = new bootstrap.Modal(orderHistoryEl);
+
+            // Initialize admin modal if user is admin
+            if (AuthService.isAdmin()) {
+                console.log('Initializing admin modal');
+                const adminProductEl = document.getElementById('adminProductModal');
+                console.log('Admin modal element:', adminProductEl);
+                
+                if (adminProductEl) {
+                    this.adminProductModal = new bootstrap.Modal(adminProductEl);
+                    console.log('Admin modal initialized:', this.adminProductModal);
+                } else {
+                    console.error('Admin modal element not found in DOM');
+                }
+            }
+        } catch (error) {
+            console.error('Error initializing modals:', error);
+        }
+    }
+
+    setupEventListeners() {
+        try {
+            // Profile actions
+            document.querySelector('[data-action="edit-profile"]')?.addEventListener('click', () => {
+                this.editProfileModal?.show();
+            });
+
+            document.querySelector('[data-action="change-password"]')?.addEventListener('click', () => {
+                this.changePasswordModal?.show();
+            });
+
+            document.querySelector('[data-action="notification-settings"]')?.addEventListener('click', () => {
+                this.notificationSettingsModal?.show();
+            });
+
+            document.querySelector('[data-action="order-history"]')?.addEventListener('click', async () => {
+                this.orderHistoryModal?.show();
+                await this.loadOrders();
+            });
+
+            // Admin actions
+            if (AuthService.isAdmin()) {
+                console.log('Setting up admin event listeners');
+                const adminModalBtn = document.querySelector('[data-action="adminProductModal"]');
+                console.log('Admin modal button:', adminModalBtn);
+                
+                if (adminModalBtn && this.adminProductModal) {
+                    console.log('Adding click listener to admin button');
+                    adminModalBtn.addEventListener('click', () => {
+                        console.log('Admin button clicked');
+                        if (this.adminProductModal) {
+                            console.log('Showing admin modal');
+                            this.adminProductModal.show();
+                        } else {
+                            console.error('Admin modal not initialized');
+                        }
+                    });
+                } else {
+                    console.error('Admin modal button or modal not found');
+                }
+
+                const saveProductBtn = document.getElementById('saveProductBtn');
+                if (saveProductBtn) {
+                    saveProductBtn.addEventListener('click', async () => {
+                        await this.handleSaveProduct();
+                    });
+                }
+            }
+
+            // Form submissions
+            document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleProfileUpdate(e);
+            });
+
+            document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handlePasswordChange(e);
+            });
+
+            document.getElementById('notification-settings-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleNotificationSettings(e);
+            });
+
+            // Logout
+            document.getElementById('logout-btn')?.addEventListener('click', () => this.handleLogout());
+        } catch (error) {
+            console.error('Error in setupEventListeners:', error);
+        }
     }
 
     async loadUserData() {
@@ -122,50 +218,6 @@ class ProfileManager {
         });
     }
 
-    bindEventListeners() {
-        // Edit Profile Button
-        document.querySelector('[data-action="edit-profile"]')?.addEventListener('click', () => {
-            this.editProfileModal.show();
-        });
-
-        // Change Password Button
-        document.querySelector('[data-action="change-password"]')?.addEventListener('click', () => {
-            this.changePasswordModal.show();
-        });
-
-        // Notification Settings Button
-        document.querySelector('[data-action="notification-settings"]')?.addEventListener('click', () => {
-            this.notificationSettingsModal.show();
-        });
-
-        // Order History Button
-        document.querySelector('[data-action="order-history"]')?.addEventListener('click', async () => {
-            await this.loadOrders();
-            this.orderHistoryModal.show();
-        });
-
-        // Logout Button
-        document.getElementById('logout-btn')?.addEventListener('click', () => this.handleLogout());
-
-        // Edit Profile Form
-        document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleProfileUpdate(e.target);
-        });
-
-        // Change Password Form
-        document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handlePasswordChange(e.target);
-        });
-
-        // Notification Settings Form
-        document.getElementById('notification-settings-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleNotificationSettings(e.target);
-        });
-    }
-
     async loadOrders() {
         try {
             const ordersList = document.getElementById('orders-list');
@@ -185,13 +237,13 @@ class ProfileManager {
             `;
 
             const response = await fetch('/UNIverseCycling/api/orders.php?action=getAll', {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${AuthService.getToken()}`
                 }
             });
 
             const data = await response.json();
-            console.log(data);
             if (data.success) {
                 this.displayOrders(data.orders);
             } else {
@@ -286,13 +338,13 @@ class ProfileManager {
         }
     }
 
-    async handleProfileUpdate(form) {
+    async handleProfileUpdate(e) {
         try {
             const formData = {
-                firstName: form.firstName.value,
-                lastName: form.lastName.value,
-                email: form.email.value,
-                phone: form.phone.value
+                firstName: e.target.firstName.value,
+                lastName: e.target.lastName.value,
+                email: e.target.email.value,
+                phone: e.target.phone.value
             };
 
             const response = await fetch('/UNIverseCycling/api/user/update-profile.php', {
@@ -318,12 +370,12 @@ class ProfileManager {
         }
     }
 
-    async handlePasswordChange(form) {
+    async handlePasswordChange(e) {
         try {
             const formData = {
-                currentPassword: form.currentPassword.value,
-                newPassword: form.newPassword.value,
-                confirmPassword: form.confirmPassword.value
+                currentPassword: e.target.currentPassword.value,
+                newPassword: e.target.newPassword.value,
+                confirmPassword: e.target.confirmPassword.value
             };
 
             const response = await fetch('/UNIverseCycling/api/user/change-password.php', {
@@ -337,7 +389,7 @@ class ProfileManager {
 
             const data = await response.json();
             if (data.success) {
-                form.reset();
+                e.target.reset();
                 this.changePasswordModal.hide();
                 await notificationManager.createNotification('success', 'Password modificata con successo');
             } else {
@@ -349,7 +401,7 @@ class ProfileManager {
         }
     }
 
-    async handleNotificationSettings(form) {
+    async handleNotificationSettings(e) {
         try {
             const settings = {
                 success: document.getElementById('success-notifications').checked,
@@ -377,8 +429,84 @@ class ProfileManager {
             await notificationManager.createNotification('error', 'Errore durante il logout');
         }
     }
+
+    async loadCategories() {
+        try {
+            const response = await fetch('/UNIverseCycling/api/categories.php?action=getAll');
+            const categories = await response.json();
+            
+            if (Array.isArray(categories)) {
+                const select = document.getElementById('productCategories');
+                select.innerHTML = '';
+                    
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.category_id;
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            await notificationManager.createNotification('error', 'Failed to load categories');
+        }
+    }
+
+    async handleSaveProduct() {
+        try {
+            const form = document.getElementById('addProductForm');
+            const formData = new FormData();
+
+            // Get form values
+            const productData = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                price: document.getElementById('productPrice').value,
+                stock: document.getElementById('productStock').value,
+                color: document.getElementById('productColor').value,
+                image: document.getElementById('productImage').files[0],
+                categories: Array.from(document.getElementById('productCategories').selectedOptions)
+                    .map(option => option.value)
+            };
+
+            console.log('Product data:', productData);
+
+            // Append to FormData
+            formData.append('name', productData.name);
+            formData.append('description', productData.description);
+            formData.append('price', productData.price);
+            formData.append('stock', productData.stock);
+            formData.append('color', productData.color);
+            formData.append('image', productData.image);
+            formData.append('categories', JSON.stringify(productData.categories));
+
+            console.log('Sending request to create product...');
+            const response = await fetch('/UNIverseCycling/api/products.php?action=create', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': `Bearer ${AuthService.getToken()}`
+                }
+            });
+
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.success) {
+                this.adminProductModal.hide();
+                form.reset();
+                await notificationManager.createNotification('success', 'Product added successfully');
+            } else {
+                throw new Error(data.error || data.message || 'Error adding product');
+            }
+        } catch (error) {
+            console.error('Error saving product:', error);
+            await notificationManager.createNotification('error', error.message);
+        }
+    }
 }
 
-
 export const profileManager = new ProfileManager();
-window.profileManager = profileManager;

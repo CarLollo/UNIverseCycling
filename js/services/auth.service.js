@@ -10,6 +10,7 @@ export class AuthService {
             if (data.success) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('email', data.email);
+                localStorage.setItem('userType', data.type);
             }
             return data;
         });
@@ -36,8 +37,17 @@ export class AuthService {
         return localStorage.getItem('token');
     }
 
+    static getUserType() {
+        return localStorage.getItem('userType');
+    }
+
+    static isAdmin() {
+        return this.getUserType() === 'admin';
+    }
+
     static logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('email');
+        localStorage.removeItem('userType');
     }
 }

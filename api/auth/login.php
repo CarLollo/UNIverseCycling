@@ -16,13 +16,17 @@ try {
     $user = $stmt->get_result()->fetch_assoc();
     
     if ($user && password_verify($data['password'], $user['password'])) {
-        // Create token as JSON with email
-        $token = base64_encode(json_encode(['email' => $user['email']]));
+        // Create token as JSON with email and type
+        $token = base64_encode(json_encode([
+            'email' => $user['email'],
+            'type' => $user['type']
+        ]));
         
         echo json_encode([
             'success' => true,
             'token' => $token,
-            'email' => $user['email']
+            'email' => $user['email'],
+            'type' => $user['type']
         ]);
     } else {
         echo json_encode([

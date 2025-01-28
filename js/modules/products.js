@@ -84,7 +84,7 @@ export class ProductsManager {
             <div class="col">
                 <div class="card h-100 product-card" 
                      data-product-id="${product.product_id}"
-                     ${categoryId ? `data-category-id="${categoryId}"` : ''}
+                     data-category-id="${categoryId || product.category_id || ''}"
                      role="button">
                     <img src="${imagePath}" 
                          class="card-img-top" 

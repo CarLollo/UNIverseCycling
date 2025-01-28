@@ -17,6 +17,7 @@ export class CategoriesManager {
     }
 
     async showCategories() {
+        console.log('showing categories');
         if (!this.categoriesContainer) return;
 
         try {

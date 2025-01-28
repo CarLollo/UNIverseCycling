@@ -40,7 +40,7 @@ export class PageLoader {
             url: '/UNIverseCycling/pages/category.php',
             onLoad: (params) => {
                 categoriesManager.init();
-                if (params.id) {
+                if (params?.id) {
                     categoriesManager.showCategoryProducts(params.id);
                 } else {
                     categoriesManager.showCategories();
@@ -115,6 +115,17 @@ export class PageLoader {
     }
 
     setupNavigationListeners() {
+        // Setup tab navigation
+        document.querySelectorAll('.nav-link').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = tab.dataset.page;
+                if (page) {
+                    this.loadPage(page);
+                }
+            });
+        });
+
         // Bottom navigation
         document.querySelectorAll('.navbar a[data-page]').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -312,7 +323,7 @@ export class PageLoader {
         // Se siamo nella pagina delle categorie e c'è un ID, torniamo alla lista delle categorie
         if (currentPage === 'categories' && params.has('id')) {
             return `
-                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.loadPage('categories'); return false;">
+                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="event.preventDefault(); pageLoader.loadPage('categories'); return false;">
                     <i class="bi bi-arrow-left me-2"></i>
                     <span>Back to Categories</span>
                 </a>
@@ -322,7 +333,7 @@ export class PageLoader {
         // Se siamo nei dettagli di un prodotto e veniamo da una categoria
         if (currentPage === 'product' && state.fromCategory) {
             return `
-                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.loadPage('categories', { id: '${state.fromCategory}' }); return false;">
+                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="event.preventDefault(); pageLoader.loadPage('categories', { id: '${state.fromCategory}' }); return false;">
                     <i class="bi bi-arrow-left me-2"></i>
                     <span>Back to Category</span>
                 </a>
@@ -331,7 +342,7 @@ export class PageLoader {
 
         // Altrimenti usiamo il back standard del browser
         return `
-            <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="window.history.back(); return false;">
+            <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="event.preventDefault(); window.history.back(); return false;">
                 <i class="bi bi-arrow-left me-2"></i>
                 <span>Back</span>
             </a>
