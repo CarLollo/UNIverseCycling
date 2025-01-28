@@ -1,11 +1,11 @@
 import { APIService } from '../services/api-service.js';
 import { AuthService } from '../services/auth.service.js';
 import { pageLoader } from './page-loader.js';
+import { notificationManager } from './notification-manager.js';
 
 export class CategoriesManager {
     constructor() {
         this.categoriesContainer = null;
-        this.init();
     }
 
     init() {
@@ -14,10 +14,6 @@ export class CategoriesManager {
             return;
         }
         this.categoriesContainer = document.querySelector('.categories-container');
-        const categoriesTab = document.querySelector('a[data-page="categories"]');
-        if (categoriesTab) {
-            categoriesTab.addEventListener('click', () => pageLoader.loadPage('categories'));
-        }
     }
 
     async showCategories() {
@@ -28,12 +24,13 @@ export class CategoriesManager {
             this.renderCategories(categories);
         } catch (error) {
             console.error('Error loading categories:', error);
+            await notificationManager.createNotification('error', 'Error loading categories');
             this.showError('Error loading categories. Please try again.');
         }
     }
 
     renderCategories(categories) {
-        if (!categories || categories.length === 0) {
+        if (!categories?.length) {
             this.categoriesContainer.innerHTML = `
                 <div class="text-center py-4">
                     <p class="mb-0">No categories available</p>
@@ -48,7 +45,6 @@ export class CategoriesManager {
             </div>
         `;
 
-        // Aggiungi event listeners per le card delle categorie
         document.querySelectorAll('.category-banner').forEach(card => {
             card.addEventListener('click', () => {
                 const categoryId = card.dataset.categoryId;
@@ -68,7 +64,8 @@ export class CategoriesManager {
                     <img src="${imagePath}" 
                          class="position-absolute w-100 h-100" 
                          alt="${category.name}"
-                         style="object-fit: cover; right: 0; top: 0;">
+                         style="object-fit: cover; right: 0; top: 0;"
+                         onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
                     <div class="card-img-overlay d-flex flex-column justify-content-between bg-gradient">
                         <div class="d-flex justify-content-between align-items-start">
                             <h3 class="h5 text-white mb-0">${category.name}</h3>
@@ -85,7 +82,7 @@ export class CategoriesManager {
 
         try {
             const products = await APIService.getProductsByCategory(categoryId);
-            if (!products || products.length === 0) {
+            if (!products?.length) {
                 this.categoriesContainer.innerHTML = `
                     <div class="container py-4">
                         <div class="mb-3">
@@ -109,13 +106,12 @@ export class CategoriesManager {
                 </div>
             `;
 
-            // Aggiungi event listeners per le card dei prodotti
             document.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', (e) => this.handleProductClick(e));
             });
-
         } catch (error) {
             console.error('Error loading category products:', error);
+            await notificationManager.createNotification('error', 'Error loading category products');
             this.showError('Error loading category products. Please try again.');
         }
     }

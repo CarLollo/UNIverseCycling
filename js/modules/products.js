@@ -5,10 +5,7 @@ import { AuthService } from '../services/auth.service.js';
 
 export class ProductsManager {
     constructor() {
-        // Cache dei prodotti
         this.products = new Map();
-        this.selectedColor = null;
-        this.currentView = null;
         this.productsContainer = null;
     }
 
@@ -22,7 +19,6 @@ export class ProductsManager {
     }
 
     setupEventListeners() {
-        // Click sulle card dei prodotti
         document.addEventListener('click', (e) => {
             const card = e.target.closest('.product-card');
             if (card) {
@@ -36,24 +32,12 @@ export class ProductsManager {
     }
 
     async loadNewArrivals() {
-        if (!this.productsContainer) {
-            console.error('Products container not found!');
-            return;
-        }
+        if (!this.productsContainer) return;
 
         try {
             this.showLoading();
-            this.currentView = 'home';
-
-            // Carica i nuovi arrivi
             const products = await APIService.getNewArrivals();
-            
-            // Salva nella cache
-            products.forEach(product => {
-                this.products.set(product.product_id, product);
-            });
-            
-            // Renderizza la griglia
+            products.forEach(product => this.products.set(product.product_id, product));
             this.productsContainer.innerHTML = this.renderProductsGrid(products);
         } catch (error) {
             await notificationManager.createNotification('error', 'Errore durante il caricamento dei prodotti');
@@ -68,17 +52,11 @@ export class ProductsManager {
 
         try {
             this.showLoading();
-            this.currentView = 'category';
-
             const products = await APIService.getProductsByCategory(categoryId);
-            
-            products.forEach(product => {
-                this.products.set(product.product_id, product);
-            });
-            
+            products.forEach(product => this.products.set(product.product_id, product));
             this.productsContainer.innerHTML = this.renderProductsGrid(products, categoryId);
         } catch (error) {
-            await notificationManager.createNotification('error', 'Errore durante la rimozione dal carrello');
+            await notificationManager.createNotification('error', 'Errore durante il caricamento dei prodotti');
             this.showError('Error loading category products. Please try again later.');
         } finally {
             this.hideLoading();
@@ -86,7 +64,7 @@ export class ProductsManager {
     }
 
     renderProductsGrid(products, categoryId = null) {
-        if (!products || products.length === 0) {
+        if (!products?.length) {
             return '<div class="alert alert-info">No products available</div>';
         }
 
@@ -130,10 +108,9 @@ export class ProductsManager {
         pageLoader.loadPage('product', params);
     }
 
-    async showProductDetails(productId, updateHistory = true) {
+    async showProductDetails(productId) {
         try {
             const product = await APIService.getProductDetails(productId);
-            
             const mainContent = document.querySelector('.main-content');
             if (!mainContent) return;
 
@@ -172,7 +149,6 @@ export class ProductsManager {
                     </div>
                 </div>
             `;
-            
         } catch (error) {
             console.error('Error loading product details:', error);
             const mainContent = document.querySelector('.main-content');
@@ -208,70 +184,15 @@ export class ProductsManager {
                 throw new Error('Please enter a valid quantity');
             }
 
-            // Aggiungi al carrello
             await APIService.addToCart(productId, quantity);
+            await notificationManager.createNotification('success', 'Product added to cart');
             
-            // Crea il toast
-            const toastContainer = document.querySelector('.toast-container');
-            const toastHtml = `
-                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <i class="bi bi-check-circle me-2"></i>
-                            Item added to cart
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            `;
-            
-            // Aggiungi il toast al container
-            toastContainer.innerHTML = toastHtml;
-            
-            // Inizializza e mostra il toast
-            const toastEl = toastContainer.querySelector('.toast');
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-
-            // Aggiorna il carrello
             const { cartManager } = await import('./cart.js');
             await cartManager.loadCart();
-
         } catch (error) {
-            await notificationManager.createNotification('error', 'Errore durante l\'aggiunta al carrello');
+            await notificationManager.createNotification('error', 'Error adding product to cart');
             this.showError(error.message || 'Error adding product to cart. Please try again later.');
         }
-    }
-
-    hideOtherContent() {
-        // Nascondi altri contenuti quando mostri i dettagli del prodotto
-        const elementsToHide = [
-            '.promo-banner',
-            '.categories-container',
-            '.products-container'
-        ];
-        
-        elementsToHide.forEach(selector => {
-            const element = document.querySelector(selector);
-            if (element) {
-                element.style.display = 'none';
-            }
-        });
-    }
-
-    showProductsList() {
-        const params = new URLSearchParams(window.location.search);
-        const categoryId = params.get('id');
-        
-        if (categoryId) {
-            this.loadCategoryProducts(categoryId);
-        } else {
-            this.loadNewArrivals();
-        }
-    }
-
-    getBackLink() {
-        return pageLoader.getBackLink();
     }
 
     showLoading() {
@@ -293,33 +214,16 @@ export class ProductsManager {
     }
 
     showError(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-danger border-0';
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        
-        const container = document.querySelector('.toast-container');
+        const container = document.querySelector('.products-container');
         if (container) {
-            container.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-
-            // Rimuovi il toast dopo che è stato nascosto
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    ${message}
+                </div>
+            `;
         }
     }
 }
 
-// Esporta l'istanza e rendila globale
 export const productsManager = new ProductsManager();
 window.productsManager = productsManager;
