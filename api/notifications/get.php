@@ -34,16 +34,51 @@ try {
         throw new Exception('User not found');
     }
 
-    // Get notifications
-    $stmt = $mysqli->prepare("
+    // Get notification settings from request
+    $data = json_decode(file_get_contents('php://input'), true);
+    $settings = isset($data['settings']) ? $data['settings'] : [
+        'success' => true,
+        'info' => true,
+        'warning' => true,
+        'error' => true
+    ];
+
+    // Create array of active types
+    $activeTypes = [];
+    foreach ($settings as $type => $active) {
+        if ($active) {
+            $activeTypes[] = $type;
+        }
+    }
+
+    if (empty($activeTypes)) {
+        echo json_encode([
+            'success' => true,
+            'notifications' => []
+        ]);
+        exit;
+    }
+
+    // Create placeholders for the IN clause
+    $placeholders = str_repeat('?,', count($activeTypes) - 1) . '?';
+    
+    // Get notifications with type filter
+    $query = "
         SELECT notification_id as id, type, title as message, is_read, notification_date as created_at 
         FROM notification 
-        WHERE user_id = ? 
+        WHERE user_id = ? AND type IN ($placeholders)
         ORDER BY notification_date DESC
         LIMIT 50
-    ");
+    ";
     
-    $stmt->bind_param("i", $user['id']);
+    $stmt = $mysqli->prepare($query);
+    
+    // Create array of parameters starting with user_id
+    $params = array_merge([$user['id']], $activeTypes);
+    $types = 'i' . str_repeat('s', count($activeTypes));
+    
+    // Bind parameters dynamically
+    $stmt->bind_param($types, ...$params);
 
     if (!$stmt->execute()) {
         throw new Exception('Failed to fetch notifications');
@@ -51,7 +86,7 @@ try {
 
     $result = $stmt->get_result();
     $notifications = [];
-
+    
     while ($row = $result->fetch_assoc()) {
         $notifications[] = [
             'id' => $row['id'],

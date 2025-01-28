@@ -1,61 +1,68 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../auth/auth_middleware.php';
+require_once __DIR__ . '/../../config/db_config.php';
 
-// Verifica che l'utente sia autenticato
-$user = authenticate();
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Utente non autenticato']);
-    exit;
-}
-
-// Verifica che la richiesta sia POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Metodo non consentito']);
-    exit;
-}
-
-// Ottieni i dati dalla richiesta
-$data = json_decode(file_get_contents('php://input'), true);
-if (!isset($data['notification_id'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'ID notifica mancante']);
-    exit;
-}
-
-$notificationId = $data['notification_id'];
-$userId = $user['id'];
+header('Content-Type: application/json');
 
 try {
-    $db = new Database();
-    $conn = $db->getConnection();
+    // Get token
+    $headers = apache_request_headers();
+    if (!isset($headers['Authorization'])) {
+        throw new Exception('No authorization token provided');
+    }
 
-    // Verifica che la notifica appartenga all'utente
-    $stmt = $conn->prepare('SELECT id FROM notifications WHERE id = ? AND user_id = ?');
-    $stmt->bind_param('ii', $notificationId, $userId);
-    $stmt->execute();
+    $token = str_replace('Bearer ', '', $headers['Authorization']);
+    $tokenJson = json_decode(base64_decode($token), true);
+
+    if (!isset($tokenJson['email'])) {
+        throw new Exception('Invalid token format - no email found');
+    }
+
+    $userEmail = $tokenJson['email'];
+
+    // Get user ID from email
+    $stmt = $mysqli->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param("s", $userEmail);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Failed to get user ID');
+    }
+    
     $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Notifica non trovata']);
-        exit;
+    $user = $result->fetch_assoc();
+    
+    if (!$user) {
+        throw new Exception('User not found');
     }
 
-    // Elimina la notifica
-    $stmt = $conn->prepare('DELETE FROM notifications WHERE id = ? AND user_id = ?');
-    $stmt->bind_param('ii', $notificationId, $userId);
-    $stmt->execute();
-
-    if ($stmt->affected_rows > 0) {
-        echo json_encode(['success' => true, 'message' => 'Notifica eliminata con successo']);
-    } else {
-        throw new Exception('Errore durante l\'eliminazione della notifica');
+    // Get notification ID from request
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['notification_id'])) {
+        throw new Exception('Notification ID is required');
     }
+
+    $notificationId = $data['notification_id'];
+
+    // Delete notification
+    $stmt = $mysqli->prepare("DELETE FROM notification WHERE notification_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $notificationId, $user['id']);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Failed to delete notification');
+    }
+
+    if ($stmt->affected_rows === 0) {
+        throw new Exception('Notification not found or already deleted');
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Notification deleted successfully'
+    ]);
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Errore del server: ' . $e->getMessage()]);
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }

@@ -49,6 +49,8 @@ export class NotificationManager {
     saveSettings(settings) {
         localStorage.setItem('notificationSettings', JSON.stringify(settings));
         this.settings = settings;
+        // Ricarica le notifiche quando cambiano i settings
+        this.loadNotifications();
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
@@ -94,7 +96,10 @@ export class NotificationManager {
 
     async loadNotifications() {
         try {
-            const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/get.php');
+            const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/get.php', {
+                method: 'POST',
+                body: JSON.stringify({ settings: this.settings })
+            });
             
             if (result.success) {
                 this.notifications = result.notifications;
@@ -106,7 +111,7 @@ export class NotificationManager {
         } catch (error) {
             console.error('Error loading notifications:', error);
             if (this.container) {
-                this.container.innerHTML = '<div class="alert alert-danger">Error loading notifications</div>';
+                this.container.innerHTML = '<div class="alert alert-danger">Errore nel caricamento delle notifiche</div>';
             }
         }
     }
@@ -216,7 +221,7 @@ export class NotificationManager {
 
     createNotificationElement(notification) {
         const div = document.createElement('div');
-        div.className = `notification ${notification.type} ${notification.isRead ? 'read' : 'unread'}`;
+        div.className = `notification ${notification.type}`;
         
         const icon = this.getNotificationIcon(notification.type);
         
@@ -224,53 +229,50 @@ export class NotificationManager {
             <div class="d-flex align-items-start">
                 <i class="bi ${icon} notification-icon"></i>
                 <div class="notification-content">
-                    <div class="notification-title">${notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}</div>
-                    <p class="notification-message">${notification.message}</p>
+                    <div class="notification-message">${notification.message}</div>
                     <small class="text-muted">${new Date(notification.createdAt).toLocaleString()}</small>
                 </div>
             </div>
-            ${!notification.isRead ? `
-                <button class="close-btn" aria-label="Mark as read">
-                    <i class="bi bi-x"></i>
-                </button>
-            ` : ''}
+            <button class="close-btn" aria-label="Close">
+                <i class="bi bi-x"></i>
+            </button>
         `;
 
-        // Add click handler for mark as read button
+        // Add click handler for X button
         const closeBtn = div.querySelector('.close-btn');
         if (closeBtn) {
             closeBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                await this.markAsRead(notification.id);
-                div.classList.remove('unread');
-                div.classList.add('read');
-                closeBtn.remove();
+                if (await this.deleteNotification(notification.id)) {
+                    div.remove();
+                    // Se non ci sono più notifiche, mostra il messaggio
+                    if (this.container.children.length === 0) {
+                        this.container.innerHTML = '<div class="text-center py-5">Non ci sono notifiche</div>';
+                    }
+                }
             });
         }
 
         return div;
     }
 
-    async markAsRead(notificationId) {
+    async deleteNotification(notificationId) {
         try {
-            const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/mark-read.php', {
+            const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/delete.php', {
                 method: 'POST',
-                body: JSON.stringify({ notificationId })
+                body: JSON.stringify({ notification_id: notificationId })
             });
             
             if (result.success) {
-                // Update the local notification object
-                const notification = this.notifications.find(n => n.id === notificationId);
-                if (notification) {
-                    notification.isRead = true;
-                }
-                // Update the badge count
+                // Rimuovi la notifica dall'array locale
+                this.notifications = this.notifications.filter(n => n.id !== notificationId);
+                // Aggiorna il contatore
                 this.updateBadgeCount();
                 return true;
             }
             return false;
         } catch (error) {
-            console.error('Error marking notification as read:', error);
+            console.error('Error deleting notification:', error);
             return false;
         }
     }
