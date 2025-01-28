@@ -12,6 +12,7 @@ export class PageLoader {
         this.mainContent = document.querySelector('.main-content');
         this.currentPage = null;
         this.pages = new Map();
+        this.currentRequest = null;
         this.init();
     }
 
@@ -238,19 +239,47 @@ export class PageLoader {
             }
         }
 
+        // Annulla la richiesta precedente se esiste
+        if (this.currentRequest && this.currentRequest.abort) {
+            this.currentRequest.abort();
+        }
+
+        // Mostra loading state
+        this.showLoading();
+
+        // Crea un controller per poter annullare la richiesta
+        const controller = new AbortController();
+        const signal = controller.signal;
+        this.currentRequest = controller;
+
         // Carica il contenuto della pagina
-        fetch(page.url)
+        fetch(page.url, { signal })
             .then(response => response.text())
             .then(html => {
-                this.mainContent.innerHTML = html;
-                if (page.onLoad) {
-                    page.onLoad(params);
+                // Controlla se questa è ancora la richiesta corrente
+                if (this.currentRequest === controller) {
+                    this.mainContent.innerHTML = html;
+                    if (page.onLoad) {
+                        page.onLoad(params);
+                    }
+                    window.scrollTo(0, 0);
                 }
-                window.scrollTo(0, 0);
             })
             .catch(error => {
+                // Ignora gli errori di abort
+                if (error.name === 'AbortError') {
+                    return;
+                }
                 console.error('Error loading page:', error);
-                this.showError('Error loading page. Please try again.');
+                if (this.currentRequest === controller) {
+                    this.showError('Error loading page. Please try again.');
+                }
+            })
+            .finally(() => {
+                // Pulisci la richiesta corrente se è ancora questa
+                if (this.currentRequest === controller) {
+                    this.currentRequest = null;
+                }
             });
     }
 
