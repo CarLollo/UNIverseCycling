@@ -244,3 +244,4 @@ export class CheckoutManager {
 }
 
 export const checkoutManager = new CheckoutManager();
+window.checkoutManager = checkoutManager;

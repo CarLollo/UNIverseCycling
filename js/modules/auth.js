@@ -116,3 +116,4 @@ export class AuthManager {
 
 // Esporta l'istanza
 export const authManager = new AuthManager();
+window.authManager = authManager;

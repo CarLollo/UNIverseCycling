@@ -142,3 +142,4 @@ export class CategoriesManager {
 }
 
 export const categoriesManager = new CategoriesManager();
+window.categoriesManager = categoriesManager;

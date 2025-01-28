@@ -84,3 +84,4 @@ export class SearchManager {
 }
 
 export const searchManager = new SearchManager();
+window.searchManager = searchManager;

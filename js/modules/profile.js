@@ -2,12 +2,12 @@ import { AuthService } from '../services/auth.service.js';
 import { pageLoader } from './page-loader.js';
 import { notificationManager } from './notification-manager.js';
 
-
 class ProfileManager {
     constructor() {
         this.editProfileModal = null;
         this.changePasswordModal = null;
         this.notificationSettingsModal = null;
+        this.orderHistoryModal = null;
         this.currentUserData = null;
     }
 
@@ -21,6 +21,7 @@ class ProfileManager {
         const editProfileModalEl = document.getElementById('editProfileModal');
         const changePasswordModalEl = document.getElementById('changePasswordModal');
         const notificationSettingsModalEl = document.getElementById('notificationSettingsModal');
+        const orderHistoryModalEl = document.getElementById('orderHistoryModal');
         
         if (editProfileModalEl) {
             this.editProfileModal = new bootstrap.Modal(editProfileModalEl);
@@ -38,6 +39,12 @@ class ProfileManager {
             this.notificationSettingsModal = new bootstrap.Modal(notificationSettingsModalEl);
         } else {
             console.error('Notification settings modal not found');
+        }
+
+        if (orderHistoryModalEl) {
+            this.orderHistoryModal = new bootstrap.Modal(orderHistoryModalEl);
+        } else {
+            console.error('Order history modal not found');
         }
 
         // Load user data
@@ -117,76 +124,165 @@ class ProfileManager {
 
     bindEventListeners() {
         // Edit Profile Button
-        const editProfileBtn = document.querySelector('[data-action="edit-profile"]');
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.editProfileModal.show();
-            });
-        }
+        document.querySelector('[data-action="edit-profile"]')?.addEventListener('click', () => {
+            this.editProfileModal.show();
+        });
 
         // Change Password Button
-        const changePasswordBtn = document.querySelector('[data-action="change-password"]');
-        if (changePasswordBtn) {
-            changePasswordBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.changePasswordModal.show();
-            });
-        }
+        document.querySelector('[data-action="change-password"]')?.addEventListener('click', () => {
+            this.changePasswordModal.show();
+        });
 
         // Notification Settings Button
-        const notificationSettingsBtn = document.querySelector('[data-action="notification-settings"]');
-        if (notificationSettingsBtn) {
-            notificationSettingsBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (this.notificationSettingsModal) {
-                    this.notificationSettingsModal.show();
-                } else {
-                    console.error('Notification settings modal not initialized');
-                }
-            });
-        } else {
-            console.error('Notification settings button not found');
-        }
+        document.querySelector('[data-action="notification-settings"]')?.addEventListener('click', () => {
+            this.notificationSettingsModal.show();
+        });
+
+        // Order History Button
+        document.querySelector('[data-action="order-history"]')?.addEventListener('click', async () => {
+            await this.loadOrders();
+            this.orderHistoryModal.show();
+        });
 
         // Logout Button
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            console.log('Found logout button');
-            logoutBtn.addEventListener('click', (e) => {
-                console.log('Logout button clicked');
-                e.preventDefault();
-                this.handleLogout();
-            });
-        } else {
-            console.error('Logout button not found');
-        }
+        document.getElementById('logout-btn')?.addEventListener('click', () => this.handleLogout());
 
         // Edit Profile Form
-        const editProfileForm = document.getElementById('edit-profile-form');
-        if (editProfileForm) {
-            editProfileForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handleProfileUpdate(e.target);
-            });
-        }
+        document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleProfileUpdate(e.target);
+        });
 
         // Change Password Form
-        const changePasswordForm = document.getElementById('change-password-form');
-        if (changePasswordForm) {
-            changePasswordForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handlePasswordChange(e.target);
-            });
-        }
+        document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handlePasswordChange(e.target);
+        });
 
         // Notification Settings Form
-        const notificationSettingsForm = document.getElementById('notification-settings-form');
-        if (notificationSettingsForm) {
-            notificationSettingsForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handleNotificationSettings(e.target);
+        document.getElementById('notification-settings-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleNotificationSettings(e.target);
+        });
+    }
+
+    async loadOrders() {
+        try {
+            const ordersList = document.getElementById('orders-list');
+            if (!ordersList) {
+                console.error('Orders list container not found');
+                return;
+            }
+
+            // Mostra loading spinner
+            ordersList.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading orders...</p>
+                </div>
+            `;
+
+            const response = await fetch('/UNIverseCycling/api/orders.php?action=getAll', {
+                headers: {
+                    'Authorization': `Bearer ${AuthService.getToken()}`
+                }
             });
+
+            const data = await response.json();
+            console.log(data);
+            if (data.success) {
+                this.displayOrders(data.orders);
+            } else {
+                throw new Error(data.error || 'Failed to load orders');
+            }
+        } catch (error) {
+            console.error('Error loading orders:', error);
+            const ordersList = document.getElementById('orders-list');
+            if (ordersList) {
+                ordersList.innerHTML = `
+                    <div class="text-center p-4 text-danger">
+                        <i class="bi bi-exclamation-circle fs-1"></i>
+                        <p class="mt-3">Error loading orders: ${error.message}</p>
+                    </div>
+                `;
+            }
+            await notificationManager.createNotification('error', 'Error loading orders');
+        }
+    }
+
+    displayOrders(orders) {
+        const ordersList = document.getElementById('orders-list');
+        if (!ordersList) {
+            console.error('Orders list container not found');
+            return;
+        }
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+            ordersList.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="bi bi-bag-x fs-1 text-muted"></i>
+                    <p class="mt-3">No orders found</p>
+                </div>
+            `;
+            return;
+        }
+
+        ordersList.innerHTML = '';
+        orders.forEach(order => {
+            const orderElement = document.createElement('div');
+            orderElement.className = 'list-group-item';
+            
+            const date = new Date(order.date).toLocaleDateString('it-IT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            orderElement.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center" data-order-id="${order.order_id}">
+                    <div>
+                        <h6 class="mb-1">Order #${order.order_id}</h6>
+                        <p class="mb-1 text-muted">
+                            <small>
+                                <i class="bi bi-calendar me-1"></i>${date}
+                                <i class="bi bi-geo-alt ms-3 me-1"></i>${order.full_address}
+                                <i class="bi bi-box ms-3 me-1"></i>${order.item_count} items
+                            </small>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-${this.getStatusBadgeClass(order.status)}">${order.status}</span>
+                        <div class="mt-1">
+                            <strong>€${order.total_amount}</strong>
+                        </div>
+                        ${order.status === 'processing' ? `
+                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="ordersManager.startStatusSimulation(${order.order_id})">
+                                <i class="bi bi-play-fill"></i> Simula consegna
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            ordersList.appendChild(orderElement);
+        });
+    }
+
+    getStatusBadgeClass(status) {
+        switch (status.toLowerCase()) {
+            case 'processing':
+                return 'warning';
+            case 'shipped':
+                return 'info';
+            case 'delivered':
+                return 'success';
+            case 'cancelled':
+                return 'danger';
+            default:
+                return 'secondary';
         }
     }
 
@@ -283,5 +379,6 @@ class ProfileManager {
     }
 }
 
+
 export const profileManager = new ProfileManager();
-profileManager.init();
+window.profileManager = profileManager;

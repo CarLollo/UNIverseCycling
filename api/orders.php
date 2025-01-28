@@ -177,10 +177,12 @@ try {
                     o.date,
                     o.status,
                     o.address,
+                    o.street,
+                    o.street_number,
                     o.city,
                     o.postal_code,
-                    SUM(op.quantity * op.unit_price) as total_amount,
-                    COUNT(op.product_id) as item_count
+                    COUNT(op.product_id) as item_count,
+                    SUM(op.quantity * op.unit_price) as total_amount
                 FROM `order` o
                 LEFT JOIN order_product op ON o.order_id = op.order_id
                 WHERE o.user_id = ?
@@ -192,6 +194,13 @@ try {
             $stmt->execute();
             $result = $stmt->get_result();
             $orders = $result->fetch_all(MYSQLI_ASSOC);
+
+            // Format dates and addresses
+            foreach ($orders as &$order) {
+                $order['date'] = date('Y-m-d H:i:s', strtotime($order['date']));
+                $order['total_amount'] = number_format($order['total_amount'], 2, '.', '');
+                $order['full_address'] = trim($order['street'] . ' ' . $order['street_number'] . ', ' . $order['postal_code'] . ' ' . $order['city']);
+            }
 
             sendJsonResponse(['success' => true, 'orders' => $orders]);
             break;
@@ -246,6 +255,56 @@ try {
             }
 
             sendJsonResponse(['success' => true, 'order' => $orderDetails]);
+            break;
+
+        case 'updateStatus':
+            // Verifica i parametri richiesti
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['order_id']) || !isset($data['status'])) {
+                sendJsonResponse(['error' => 'Missing required parameters'], 400);
+                return;
+            }
+
+            // Verifica che lo stato sia valido
+            $validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
+            if (!in_array($data['status'], $validStatuses)) {
+                sendJsonResponse(['error' => 'Invalid status'], 400);
+                return;
+            }
+
+            // Verifica che l'ordine appartenga all'utente
+            $stmt = $mysqli->prepare("
+                SELECT status 
+                FROM `order` 
+                WHERE order_id = ? AND user_id = ?
+            ");
+            $stmt->bind_param("ii", $data['order_id'], $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if (!$result->fetch_assoc()) {
+                sendJsonResponse(['error' => 'Order not found or unauthorized'], 404);
+                return;
+            }
+
+            // Aggiorna lo stato
+            $stmt = $mysqli->prepare("
+                UPDATE `order` 
+                SET status = ? 
+                WHERE order_id = ? AND user_id = ?
+            ");
+            $stmt->bind_param("sii", $data['status'], $data['order_id'], $userId);
+            
+            if ($stmt->execute()) {
+                sendJsonResponse([
+                    'success' => true, 
+                    'message' => 'Status updated successfully',
+                    'order_id' => $data['order_id'],
+                    'status' => $data['status']
+                ]);
+            } else {
+                sendJsonResponse(['error' => 'Failed to update status'], 500);
+            }
             break;
 
         default:

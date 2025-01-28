@@ -29,6 +29,13 @@
                             <div class="flex-grow-1">Notifications</div>
                             <i class="bi bi-chevron-right"></i>
                         </a>
+
+                        <!-- Order History -->
+                        <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="order-history">
+                            <i class="bi bi-clock-history me-3"></i>
+                            <div class="flex-grow-1">Order History</div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
                     </div>
 
                     <!-- Logout Button -->
@@ -154,6 +161,27 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Save Settings</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Order History Modal -->
+<div class="modal fade" id="orderHistoryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="orders-list" class="list-group">
+                    <!-- Orders will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

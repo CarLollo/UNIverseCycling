@@ -115,21 +115,43 @@ export class PageLoader {
     }
 
     setupNavigationListeners() {
-        // Tab navigation
-        document.querySelectorAll('.nav-link[data-page]').forEach(tab => {
-            tab.addEventListener('click', (e) => {
+        // Bottom navigation
+        document.querySelectorAll('.navbar a[data-page]').forEach(link => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = tab.dataset.page;
+                const page = e.currentTarget.dataset.page;
                 this.loadPage(page);
             });
         });
 
+        // Generic navigation
+        document.addEventListener('click', (e) => {
+            // Trova il link più vicino nell'albero degli eventi
+            const link = e.target.closest('a[href]');
+            
+            // Se non è un link o è un link di un modale o ha data-page, ignora
+            if (!link || 
+                link.closest('.modal') || 
+                link.hasAttribute('data-page') ||
+                link.hasAttribute('data-action') ||
+                link.hasAttribute('data-bs-toggle')) {
+                return;
+            }
+
+            // Se è un link interno
+            if (link.getAttribute('href').startsWith('#')) {
+                const page = link.getAttribute('href').substring(1);
+                if (this.pages.has(page)) {
+                    e.preventDefault();
+                    this.loadPage(page);
+                }
+            }
+        });
+
         // Handle browser back/forward
-        window.addEventListener('popstate', (event) => {
-            if (event.state?.page) {
-                this.loadPage(event.state.page, event.state.params || {}, false);
-            } else {
-                this.loadPage('home', {}, false);
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.page) {
+                this.loadPage(e.state.page, null, false);
             }
         });
     }
