@@ -5,7 +5,6 @@ import { notificationManager } from './notification-manager.js';
 export class CartManager {
     constructor() {
         this.cartItems = [];
-        this.init();
     }
 
     init() {
@@ -14,15 +13,19 @@ export class CartManager {
             return;
         }
         
-        this.loadCart();
+        console.log('Initializing cart...');
         this.bindEvents();
+        this.loadCart();
     }
 
     bindEvents() {
+        console.log('Binding events...');
         document.addEventListener('click', async (e) => {
-            if (e.target.matches('.remove-from-cart')) {
+            const removeBtn = e.target.closest('.remove-from-cart');
+            if (removeBtn) {
+                console.log('Removing from cart...');
                 e.preventDefault();
-                const productId = e.target.dataset.productId;
+                const productId = removeBtn.dataset.productId;
                 await this.removeFromCart(productId);
             }
         });
@@ -53,6 +56,7 @@ export class CartManager {
     }
 
     showCart() {
+        console.log('Showing cart...');
         const cartContainer = document.getElementById('cart-items');
         if (!cartContainer) return;
 
@@ -79,6 +83,9 @@ export class CartManager {
         if (totalElement) {
             totalElement.textContent = `€${total.toFixed(2)}`;
         }
+
+        // Riattacca gli event listeners dopo aver aggiornato il contenuto
+        this.bindEvents();
     }
 
     renderCartItem(item) {
@@ -94,7 +101,7 @@ export class CartManager {
                 <div class="d-flex align-items-center">
                     <div class="me-4">Quantità: ${item.quantity}</div>
                     <div class="me-3">€${(item.price * item.quantity).toFixed(2)}</div>
-                    <button class="btn btn-link text-danger p-0" onclick="cartManager.removeFromCart(${item.product_id})">
+                    <button class="btn btn-link text-danger p-0 remove-from-cart" data-product-id="${item.product_id}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -165,4 +172,6 @@ export class CartManager {
     }
 }
 
+// Esporta l'istanza e rendila globale
 export const cartManager = new CartManager();
+window.cartManager = cartManager;

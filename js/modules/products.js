@@ -32,30 +32,14 @@ export class ProductsManager {
                 }
             }
         });
-
-        // Gestisci la navigazione del browser
-        window.addEventListener('popstate', (e) => {
-            this.handleNavigationState();
-        });
     }
 
     handleInitialState() {
         const params = new URLSearchParams(window.location.search);
-        const action = params.get('action');
         const id = params.get('id');
 
-        if (action === 'product' && id) {
-            this.showProductDetails(id, false);
-        } else if (action === 'category' && id) {
-            this.loadCategoryProducts(id);
-        } else if (action === 'search') {
-            // La ricerca viene gestita dal SearchManager
-            const query = params.get('query');
-            if (query) {
-                import('./search.js').then(module => {
-                    module.searchManager.performSearch(query);
-                });
-            }
+        if (id) {
+            this.showProductDetails(id);
         } else {
             this.loadNewArrivals();
         }
@@ -63,11 +47,10 @@ export class ProductsManager {
 
     handleNavigationState() {
         const params = new URLSearchParams(window.location.search);
-        const action = params.get('action');
         const id = params.get('id');
 
-        if (action === 'product' && id) {
-            this.showProductDetails(id, false);
+        if (id) {
+            this.showProductDetails(id);
         } else {
             this.showProductsList();
         }
@@ -306,125 +289,18 @@ export class ProductsManager {
     }
 
     showProductsList() {
-        // Mostra la vista appropriata in base allo stato corrente
-        switch (this.currentView) {
-            case 'category':
-                const categoryId = new URLSearchParams(window.location.search).get('id');
-                if (categoryId) {
-                    this.loadCategoryProducts(categoryId);
-                }
-                break;
-            case 'search':
-                const query = new URLSearchParams(window.location.search).get('query');
-                if (query) {
-                    import('./search.js').then(module => {
-                        module.searchManager.performSearch(query);
-                    });
-                }
-                break;
-            default:
-                this.loadNewArrivals();
-        }
-
-        // Mostra gli elementi nascosti
-        const elementsToShow = [
-            '.promo-banner',
-            '.categories-container',
-            '.products-container'
-        ];
+        const params = new URLSearchParams(window.location.search);
+        const categoryId = params.get('id');
         
-        elementsToShow.forEach(selector => {
-            const element = document.querySelector(selector);
-            if (element) {
-                element.style.display = 'block';
-            }
-        });
+        if (categoryId) {
+            this.loadCategoryProducts(categoryId);
+        } else {
+            this.loadNewArrivals();
+        }
     }
 
     getBackLink() {
-        const params = new URLSearchParams(window.location.search);
-        const searchQuery = params.get('query');
-        const categoryId = params.get('category_id');
-        
-        if (searchQuery) {
-            return {
-                url: `${window.location.pathname}?action=search&query=${encodeURIComponent(searchQuery)}`,
-                text: 'Back to Search Results'
-            };
-        } else if (categoryId) {
-            return {
-                url: `${window.location.pathname}?action=category&id=${categoryId}`,
-                text: 'Back to Category'
-            };
-        } else {
-            return {
-                url: window.location.pathname,
-                text: 'Back to Home'
-            };
-        }
-    }
-
-    async addToCart(productId) {
-        try {
-            const quantityInput = document.getElementById(`product-quantity-${productId}`);
-            if (!quantityInput) {
-                throw new Error('Quantity input not found');
-            }
-
-            const quantity = parseInt(quantityInput.value);
-            if (isNaN(quantity) || quantity < 1) {
-                throw new Error('Invalid quantity');
-            }
-
-            await APIService.addToCart(productId, quantity);
-            
-            // Refresh cart badge
-            const cartManager = (await import('./cart.js')).cartManager;
-            await cartManager.loadCart();
-            
-            // Show success message using Bootstrap toast
-            const toastContainer = document.querySelector('.toast-container');
-            if (toastContainer) {
-                const toast = document.createElement('div');
-                toast.className = 'toast align-items-center text-white bg-success border-0';
-                toast.setAttribute('role', 'alert');
-                toast.setAttribute('aria-live', 'assertive');
-                toast.setAttribute('aria-atomic', 'true');
-                
-                toast.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">Product added to cart successfully!</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                `;
-                
-                toastContainer.appendChild(toast);
-                const bsToast = new bootstrap.Toast(toast);
-                bsToast.show();
-            }
-        } catch (error) {
-            console.error('Error adding to cart:', error);
-            // Show error message using Bootstrap toast
-            const toastContainer = document.querySelector('.toast-container');
-            if (toastContainer) {
-                const toast = document.createElement('div');
-                toast.className = 'toast align-items-center text-white bg-danger border-0';
-                toast.setAttribute('role', 'alert');
-                toast.setAttribute('aria-live', 'assertive');
-                toast.setAttribute('aria-atomic', 'true');
-                
-                toast.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">Error adding product to cart: ${error.message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                `;
-                
-                toastContainer.appendChild(toast);
-                const bsToast = new bootstrap.Toast(toast);
-                bsToast.show();
-            }
-        }
+        return pageLoader.getBackLink();
     }
 
     showLoading() {
@@ -469,17 +345,6 @@ export class ProductsManager {
             toast.addEventListener('hidden.bs.toast', () => {
                 toast.remove();
             });
-        }
-    }
-
-    goBack() {
-        const params = new URLSearchParams(window.location.search);
-        const fromCategory = params.get('fromCategory');
-        
-        if (fromCategory) {
-            window.pageLoader.loadPage('category', { id: fromCategory });
-        } else {
-            window.pageLoader.loadPage('home');
         }
     }
 }

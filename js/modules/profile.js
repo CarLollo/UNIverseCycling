@@ -150,12 +150,16 @@ class ProfileManager {
         }
 
         // Logout Button
-        const logoutBtn = document.querySelector('[data-action="logout"]');
+        const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
+            console.log('Found logout button');
             logoutBtn.addEventListener('click', (e) => {
+                console.log('Logout button clicked');
                 e.preventDefault();
                 this.handleLogout();
             });
+        } else {
+            console.error('Logout button not found');
         }
 
         // Edit Profile Form
@@ -269,9 +273,9 @@ class ProfileManager {
 
     async handleLogout() {
         try {
-            await AuthService.logout();
             await notificationManager.createNotification('info', 'Logout effettuato con successo');
-            pageLoader.loadPage('home');
+            await AuthService.logout();
+            pageLoader.loadPage('login');
         } catch (error) {
             console.error('Error during logout:', error);
             await notificationManager.createNotification('error', 'Errore durante il logout');

@@ -79,8 +79,7 @@ export class PageLoader {
                     this.loadPage('login');
                     return;
                 }
-                cartManager.loadCart();
-                cartManager.showCart();
+                cartManager.init();
             }
         });
 
@@ -281,10 +280,6 @@ export class PageLoader {
                     this.currentRequest = null;
                 }
             });
-    }
-
-    goBack() {
-        window.history.back();
     }
 
     getBackLink() {
