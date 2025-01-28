@@ -27,8 +27,9 @@ export class ProductsManager {
             const card = e.target.closest('.product-card');
             if (card) {
                 const productId = card.dataset.productId;
+                const categoryId = card.dataset.categoryId;
                 if (productId) {
-                    this.handleProductClick(productId);
+                    this.handleProductClick(productId, categoryId);
                 }
             }
         });
@@ -75,7 +76,7 @@ export class ProductsManager {
                 this.products.set(product.product_id, product);
             });
             
-            this.productsContainer.innerHTML = this.renderProductsGrid(products);
+            this.productsContainer.innerHTML = this.renderProductsGrid(products, categoryId);
         } catch (error) {
             await notificationManager.createNotification('error', 'Errore durante la rimozione dal carrello');
             this.showError('Error loading category products. Please try again later.');
@@ -84,26 +85,29 @@ export class ProductsManager {
         }
     }
 
-    renderProductsGrid(products) {
+    renderProductsGrid(products, categoryId = null) {
         if (!products || products.length === 0) {
             return '<div class="alert alert-info">No products available</div>';
         }
 
         return `
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
-                ${products.map(product => this.renderProductCard(product)).join('')}
+                ${products.map(product => this.renderProductCard(product, categoryId)).join('')}
             </div>
         `;
     }
 
-    renderProductCard(product) {
+    renderProductCard(product, categoryId = null) {
         const imagePath = product.image_path.startsWith('/') 
             ? `/UNIverseCycling${product.image_path}`
             : `/UNIverseCycling/${product.image_path}`;
 
         return `
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 product-card" data-product-id="${product.product_id}" role="button">
+            <div class="col">
+                <div class="card h-100 product-card" 
+                     data-product-id="${product.product_id}"
+                     ${categoryId ? `data-category-id="${categoryId}"` : ''}
+                     role="button">
                     <img src="${imagePath}" 
                          class="card-img-top" 
                          alt="${product.name}"
@@ -118,8 +122,12 @@ export class ProductsManager {
         `;
     }
 
-    handleProductClick(productId) {
-        pageLoader.loadPage('product', { id: productId });
+    handleProductClick(productId, categoryId = null) {
+        const params = { id: productId };
+        if (categoryId) {
+            params.fromCategory = categoryId;
+        }
+        pageLoader.loadPage('product', params);
     }
 
     async showProductDetails(productId, updateHistory = true) {

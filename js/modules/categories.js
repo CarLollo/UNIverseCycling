@@ -105,23 +105,32 @@ export class CategoriesManager {
                     <div class="mb-3">
                         ${pageLoader.getBackLink()}
                     </div>
-                    ${productsManager.renderProductsGrid(products)}
+                    ${productsManager.renderProductsGrid(products, categoryId)}
                 </div>
             `;
 
             // Aggiungi event listeners per le card dei prodotti
             document.querySelectorAll('.product-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    const productId = card.dataset.productId;
-                    if (productId) {
-                        pageLoader.loadPage('product', { id: productId });
-                    }
-                });
+                card.addEventListener('click', (e) => this.handleProductClick(e));
             });
 
         } catch (error) {
             console.error('Error loading category products:', error);
             this.showError('Error loading category products. Please try again.');
+        }
+    }
+
+    handleProductClick(e) {
+        const card = e.target.closest('.product-card');
+        if (card) {
+            const productId = card.dataset.productId;
+            const categoryId = card.dataset.categoryId;
+            if (productId) {
+                pageLoader.loadPage('product', { 
+                    id: productId,
+                    fromCategory: categoryId 
+                });
+            }
         }
     }
 

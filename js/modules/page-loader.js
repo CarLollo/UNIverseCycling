@@ -283,6 +283,31 @@ export class PageLoader {
     }
 
     getBackLink() {
+        const currentPage = this.getCurrentPage();
+        const params = new URLSearchParams(window.location.search);
+        const state = window.history.state || {};
+        
+        // Se siamo nella pagina delle categorie e c'è un ID, torniamo alla lista delle categorie
+        if (currentPage === 'categories' && params.has('id')) {
+            return `
+                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.loadPage('categories'); return false;">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    <span>Back to Categories</span>
+                </a>
+            `;
+        }
+
+        // Se siamo nei dettagli di un prodotto e veniamo da una categoria
+        if (currentPage === 'product' && state.fromCategory) {
+            return `
+                <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.loadPage('categories', { id: '${state.fromCategory}' }); return false;">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    <span>Back to Category</span>
+                </a>
+            `;
+        }
+
+        // Altrimenti usiamo il back standard del browser
         return `
             <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="window.history.back(); return false;">
                 <i class="bi bi-arrow-left me-2"></i>
