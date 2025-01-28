@@ -98,6 +98,17 @@ export class PageLoader {
                 notificationManager.init();
             }
         });
+
+        this.pages.set('product', {
+            url: '/UNIverseCycling/pages/product.php',
+            onLoad: (params) => {
+                if (params.id) {
+                    productsManager.showProductDetails(params.id, false);
+                } else {
+                    this.loadPage('home');
+                }
+            }
+        });
     }
 
     setupNavigationListeners() {
@@ -106,12 +117,6 @@ export class PageLoader {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = tab.dataset.page;
-                
-                // Aggiorna i tab
-                document.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                // Carica la pagina
                 this.loadPage(page);
             });
         });
@@ -119,7 +124,9 @@ export class PageLoader {
         // Handle browser back/forward
         window.addEventListener('popstate', (event) => {
             if (event.state?.page) {
-                this.loadPage(event.state.page, false);
+                this.loadPage(event.state.page, event.state.params || {}, false);
+            } else {
+                this.loadPage('home', {}, false);
             }
         });
     }
@@ -175,15 +182,7 @@ export class PageLoader {
         if (topNav) topNav.style.display = 'flex';
     }
 
-    loadPage(pageName, params = {}) {
-        // Salva la pagina corrente nella cronologia
-        if (this.currentPage) {
-            this.navigationHistory.push({
-                page: this.currentPage,
-                params: new URLSearchParams(window.location.search)
-            });
-        }
-
+    loadPage(pageName, params = {}, pushState = true) {
         const page = this.pages.get(pageName);
         if (!page) {
             console.error(`Page ${pageName} not found`);
@@ -216,12 +215,16 @@ export class PageLoader {
         }
 
         // Costruisci l'URL con i parametri
-        const queryString = Object.entries(params)
-            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-            .join('&');
-        const url = `${page.url}${queryString ? '?' + queryString : ''}`;
+        const queryParams = new URLSearchParams(params).toString();
+        const newUrl = `?page=${pageName}${queryParams ? '&' + queryParams : ''}`;
+        
+        // Aggiorna l'URL del browser e la history
+        if (pushState) {
+            window.history.pushState({ page: pageName, params }, '', newUrl);
+        }
 
-        fetch(url)
+        // Carica il contenuto della pagina
+        fetch(page.url)
             .then(response => response.text())
             .then(html => {
                 this.mainContent.innerHTML = html;
@@ -232,6 +235,7 @@ export class PageLoader {
             })
             .catch(error => {
                 console.error('Error loading page:', error);
+                this.showError('Error loading page. Please try again.');
             });
     }
 

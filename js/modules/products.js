@@ -158,7 +158,7 @@ export class ProductsManager {
     }
 
     handleProductClick(productId) {
-        this.showProductDetails(productId);
+        pageLoader.loadPage('product', { id: productId });
     }
 
     async showProductDetails(productId, updateHistory = true) {
@@ -217,13 +217,6 @@ export class ProductsManager {
             }
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', () => this.handleAddToCart(productId));
-            }
-
-            if (updateHistory) {
-                const url = new URL(window.location);
-                url.searchParams.set('action', 'product');
-                url.searchParams.set('id', productId);
-                window.history.pushState({}, '', url);
             }
             
         } catch (error) {
