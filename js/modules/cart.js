@@ -152,23 +152,7 @@ export class CartManager {
             return;
         }
 
-        try {
-            const response = await APIService.request('/checkout.php', {
-                method: 'POST'
-            });
-
-            if (response.success) {
-                this.cartItems = [];
-                this.updateCartBadge();
-                this.showCart();
-                await notificationManager.createNotification('success', 'Ordine completato con successo!');
-            } else {
-                throw new Error(response.message || 'Checkout failed');
-            }
-        } catch (error) {
-            console.error('Error during checkout:', error);
-            await notificationManager.createNotification('error', 'Errore durante il checkout');
-        }
+        pageLoader.loadPage('checkout');
     }
 }
 

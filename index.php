@@ -16,6 +16,7 @@ $templateParams = [
         "js/modules/orders.js",
         "js/modules/profile.js",
         "js/modules/notification-manager.js",
+        "js/modules/checkout.js",
         "js/main.js"
     ]
 ];

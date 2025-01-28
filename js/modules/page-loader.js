@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth.service.js';
 import { authManager } from './auth.js';
 import { profileManager } from './profile.js';
 import { NotificationManager } from './notification-manager.js';
+import { checkoutManager } from './checkout.js';
 
 export class PageLoader {
     constructor() {
@@ -75,21 +76,20 @@ export class PageLoader {
         this.pages.set('cart', {
             url: '/UNIverseCycling/pages/cart.php',
             onLoad: () => {
-                if (!AuthService.isAuthenticated()) {
-                    this.loadPage('login');
-                    return;
-                }
                 cartManager.init();
+            }
+        });
+
+        this.pages.set('checkout', {
+            url: '/UNIverseCycling/pages/checkout.php',
+            onLoad: () => {
+                checkoutManager.init();
             }
         });
 
         this.pages.set('profile', {
             url: '/UNIverseCycling/pages/profile.php',
             onLoad: () => {
-                if (!AuthService.isAuthenticated()) {
-                    this.loadPage('login');
-                    return;
-                }
                 profileManager.init();
             }
         });

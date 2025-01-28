@@ -97,11 +97,12 @@ export class APIService {
             })
         });
     }
-
+    
     // Order endpoints
-    static async createOrder() {
+    static async createOrder(orderData) {
         return this.request('/orders.php?action=create', {
-            method: 'POST'
+            method: 'POST',
+            body: JSON.stringify(orderData)
         });
     }
 
