@@ -1,6 +1,7 @@
 import { APIService } from '../services/api-service.js';
 import { pageLoader } from './page-loader.js';
 import { notificationManager } from './notification-manager.js';
+import { AuthService } from '../services/auth.service.js';
 
 export class ProductsManager {
     constructor() {
@@ -12,6 +13,10 @@ export class ProductsManager {
     }
 
     init() {
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping products initialization');
+            return;
+        }
         this.productsContainer = document.querySelector('.products-container');
         this.setupEventListeners();
     }

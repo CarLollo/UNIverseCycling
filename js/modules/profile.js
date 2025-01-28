@@ -2,6 +2,7 @@ import { AuthService } from '../services/auth.service.js';
 import { pageLoader } from './page-loader.js';
 import { notificationManager } from './notification-manager.js';
 
+
 class ProfileManager {
     constructor() {
         this.editProfileModal = null;
@@ -11,7 +12,10 @@ class ProfileManager {
     }
 
     init() {
-        console.log('ProfileManager initialized');
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping profile initialization');
+            return;
+        }
         
         // Initialize Bootstrap modals
         const editProfileModalEl = document.getElementById('editProfileModal');

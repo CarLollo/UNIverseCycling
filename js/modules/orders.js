@@ -8,6 +8,10 @@ export class OrdersManager {
     }
 
     init() {
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping orders initialization');
+            return;
+        }
         this.bindOrderHistoryButton();
     }
 

@@ -1,5 +1,6 @@
 import { APIService } from '../services/api-service.js';
 import { productsManager } from './products.js';
+import { AuthService } from '../services/auth.service.js';
 
 export class SearchManager {
     constructor() {
@@ -8,6 +9,10 @@ export class SearchManager {
     }
 
     init() {
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping search initialization');
+            return;
+        }
         this.searchInput = document.querySelector('.search-input');
         
         if (this.searchInput) {

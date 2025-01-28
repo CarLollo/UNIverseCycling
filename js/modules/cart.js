@@ -9,6 +9,11 @@ export class CartManager {
     }
 
     init() {
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping cart initialization');
+            return;
+        }
+        
         this.loadCart();
         this.bindEvents();
     }
@@ -161,4 +166,3 @@ export class CartManager {
 }
 
 export const cartManager = new CartManager();
-window.cartManager = cartManager;

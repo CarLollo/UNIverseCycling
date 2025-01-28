@@ -1,4 +1,5 @@
 import { APIService } from '../services/api-service.js';
+import { AuthService } from '../services/auth.service.js';
 
 export class CategoriesManager {
     constructor() {
@@ -7,6 +8,10 @@ export class CategoriesManager {
     }
 
     init() {
+        if (!AuthService.isAuthenticated()) {
+            console.log('User not logged in, skipping categories initialization');
+            return;
+        }
         this.categoriesContainer = document.querySelector('.categories-container');
         const categoriesTab = document.querySelector('a[data-page="categories"]');
         if (categoriesTab) {
