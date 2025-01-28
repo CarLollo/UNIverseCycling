@@ -41,8 +41,15 @@ export class CategoriesManager {
         }
 
         this.categoriesContainer.innerHTML = `
-            <div class="categories-fullwidth">
-                ${categories.map(category => this.renderCategoryCard(category)).join('')}
+            <div class="container py-4">
+                <h2 class="mb-4">Our Categories</h2>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    ${categories.map(category => `
+                        <div class="col">
+                            ${this.renderCategoryCard(category)}
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
 
@@ -60,18 +67,31 @@ export class CategoriesManager {
             : `/UNIverseCycling/${category.image_path}`;
 
         return `
-            <div class="category-banner" data-category-id="${category.category_id}">
-                <div class="product-card card border-0 shadow-sm position-relative overflow-hidden" style="height: 150px;">
+            <div class="category-banner mb-4" data-category-id="${category.category_id}">
+                <div class="product-card card border-0 shadow-sm position-relative overflow-hidden" style="height: 200px;">
                     <img src="${imagePath}" 
                          class="position-absolute w-100 h-100" 
                          alt="${category.name}"
                          style="object-fit: cover; right: 0; top: 0;"
                          onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
-                    <div class="card-img-overlay d-flex flex-column justify-content-between bg-gradient">
+                    <div class="card-img-overlay d-flex flex-column justify-content-between" 
+                         style="background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);">
                         <div class="d-flex justify-content-between align-items-start">
-                            <h3 class="h5 text-white mb-0">${category.name}</h3>
+                            <h3 class="h4 text-white mb-0 fw-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                                ${category.name}
+                            </h3>
+                            <span class="badge bg-primary">
+                                ${category.product_count || 0} Products
+                            </span>
                         </div>
-                        <p class="text-white mb-0">${category.product_count || 0} Products</p>
+                        <div class="mt-auto">
+                            <div class="d-flex align-items-center">
+                                <span class="text-white small" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                                    Click to view all products
+                                </span>
+                                <i class="bi bi-arrow-right text-white ms-2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

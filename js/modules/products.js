@@ -129,21 +129,29 @@ export class ProductsManager {
                             <p class="my-4">${product.description || 'No description available.'}</p>
                             
                             <div class="mb-3">
+                                <div class="mb-2">
+                                    <span class="text-muted">Available: </span>
+                                    <span class="badge ${product.stock > 5 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}">
+                                        ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                                    </span>
+                                </div>
                                 <label class="form-label">Quantity:</label>
                                 <div class="input-group" style="width: 140px;">
                                     <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(-1)">
                                         <i class="bi bi-dash"></i>
                                     </button>
                                     <input type="number" class="form-control text-center quantity-input" 
-                                           value="1" min="1" max="${product.stock || 10}">
+                                           value="1" min="1" max="${product.stock || 10}"
+                                           style="-webkit-appearance: none; -moz-appearance: textfield; margin: 0;">
                                     <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(1)">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <button class="btn btn-primary w-100" onclick="productsManager.handleAddToCart(${productId})">
-                                Add to Cart
+                            <button class="btn btn-primary w-100" onclick="productsManager.handleAddToCart(${productId})"
+                                    ${product.stock === 0 ? 'disabled' : ''}>
+                                ${product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                             </button>
                         </div>
                     </div>
