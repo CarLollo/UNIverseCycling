@@ -1,5 +1,6 @@
 import { APIService } from '../services/api-service.js';
 import { AuthService } from '../services/auth.service.js';
+import { pageLoader } from './page-loader.js';
 
 export class CategoriesManager {
     constructor() {
@@ -15,7 +16,7 @@ export class CategoriesManager {
         this.categoriesContainer = document.querySelector('.categories-container');
         const categoriesTab = document.querySelector('a[data-page="categories"]');
         if (categoriesTab) {
-            categoriesTab.addEventListener('click', () => this.showCategories());
+            categoriesTab.addEventListener('click', () => pageLoader.loadPage('categories'));
         }
     }
 
@@ -31,54 +32,8 @@ export class CategoriesManager {
         }
     }
 
-    async showCategoryProducts(categoryId) {
-        if (!this.categoriesContainer) return;
-
-        try {
-            const products = await APIService.getProductsByCategory(categoryId);
-            if (!products || products.length === 0) {
-                this.categoriesContainer.innerHTML = `
-                    <div class="container py-4">
-                        <div class="mb-3">
-                            ${pageLoader.getBackLink()}
-                        </div>
-                        <div class="text-center py-4">
-                            <p class="mb-0">No products available in this category</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            this.categoriesContainer.innerHTML = `
-                <div class="container py-4">
-                    <div class="mb-4">
-                        ${pageLoader.getBackLink()}
-                    </div>
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
-                        ${products.map(product => window.productsManager.renderProductCard(product)).join('')}
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            console.error('Error loading category products:', error);
-            this.categoriesContainer.innerHTML = `
-                <div class="container py-4">
-                    <div class="mb-3">
-                        ${pageLoader.getBackLink()}
-                    </div>
-                    <div class="alert alert-danger">
-                        Error loading products. Please try again.
-                    </div>
-                </div>
-            `;
-        }
-    }
-
     renderCategories(categories) {
-        if (!this.categoriesContainer) return;
-
-        if (categories.length === 0) {
+        if (!categories || categories.length === 0) {
             this.categoriesContainer.innerHTML = `
                 <div class="text-center py-4">
                     <p class="mb-0">No categories available</p>
@@ -93,10 +48,11 @@ export class CategoriesManager {
             </div>
         `;
 
+        // Aggiungi event listeners per le card delle categorie
         document.querySelectorAll('.category-banner').forEach(card => {
             card.addEventListener('click', () => {
                 const categoryId = card.dataset.categoryId;
-                this.showCategoryProducts(categoryId);
+                pageLoader.loadPage('categories', { id: categoryId });
             });
         });
     }
@@ -122,6 +78,51 @@ export class CategoriesManager {
                 </div>
             </div>
         `;
+    }
+
+    async showCategoryProducts(categoryId) {
+        if (!this.categoriesContainer) return;
+
+        try {
+            const products = await APIService.getProductsByCategory(categoryId);
+            if (!products || products.length === 0) {
+                this.categoriesContainer.innerHTML = `
+                    <div class="container py-4">
+                        <div class="mb-3">
+                            ${pageLoader.getBackLink()}
+                        </div>
+                        <div class="text-center py-4">
+                            <p class="mb-0">No products available in this category</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const { productsManager } = await import('./products.js');
+            this.categoriesContainer.innerHTML = `
+                <div class="container py-4">
+                    <div class="mb-3">
+                        ${pageLoader.getBackLink()}
+                    </div>
+                    ${productsManager.renderProductsGrid(products)}
+                </div>
+            `;
+
+            // Aggiungi event listeners per le card dei prodotti
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const productId = card.dataset.productId;
+                    if (productId) {
+                        pageLoader.loadPage('product', { id: productId });
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error('Error loading category products:', error);
+            this.showError('Error loading category products. Please try again.');
+        }
     }
 
     showError(message) {

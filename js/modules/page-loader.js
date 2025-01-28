@@ -12,7 +12,6 @@ export class PageLoader {
         this.mainContent = document.querySelector('.main-content');
         this.currentPage = null;
         this.pages = new Map();
-        this.navigationHistory = [];
         this.init();
     }
 
@@ -37,9 +36,13 @@ export class PageLoader {
 
         this.pages.set('categories', {
             url: '/UNIverseCycling/pages/category.php',
-            onLoad: () => {
+            onLoad: (params) => {
                 categoriesManager.init();
-                categoriesManager.showCategories();
+                if (params.id) {
+                    categoriesManager.showCategoryProducts(params.id);
+                } else {
+                    categoriesManager.showCategories();
+                }
             },
             showTabs: true
         });
@@ -189,6 +192,11 @@ export class PageLoader {
             return;
         }
 
+        // Controlla se stiamo solo aggiornando i parametri della stessa pagina
+        const currentUrl = new URLSearchParams(window.location.search);
+        const currentPage = currentUrl.get('page') || 'home';
+        const isPageChange = currentPage !== pageName;
+
         this.currentPage = pageName;
 
         // Aggiorna il tab attivo solo se la pagina deve mostrare i tabs
@@ -220,7 +228,14 @@ export class PageLoader {
         
         // Aggiorna l'URL del browser e la history
         if (pushState) {
-            window.history.pushState({ page: pageName, params }, '', newUrl);
+            const state = { page: pageName, params };
+            // Se stiamo cambiando pagina, usa pushState
+            // Se stiamo solo aggiornando parametri o non è un cambio di pagina, usa replaceState
+            if (isPageChange) {
+                window.history.pushState(state, '', newUrl);
+            } else {
+                window.history.replaceState(state, '', newUrl);
+            }
         }
 
         // Carica il contenuto della pagina
@@ -240,17 +255,12 @@ export class PageLoader {
     }
 
     goBack() {
-        if (this.navigationHistory.length > 0) {
-            const lastPage = this.navigationHistory.pop();
-            this.loadPage(lastPage.page, Object.fromEntries(lastPage.params));
-        } else {
-            this.loadPage('home');
-        }
+        window.history.back();
     }
 
     getBackLink() {
         return `
-            <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="pageLoader.goBack(); return false;">
+            <a href="#" class="text-primary text-decoration-none d-inline-flex align-items-center mb-3" onclick="window.history.back(); return false;">
                 <i class="bi bi-arrow-left me-2"></i>
                 <span>Back</span>
             </a>
