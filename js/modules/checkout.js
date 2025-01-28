@@ -119,28 +119,59 @@ export class CheckoutManager {
 
     setupCardValidation() {
         const cardNumber = document.getElementById('cardNumber');
+        const cardName = document.getElementById('cardName');
         const expiryDate = document.getElementById('expiryDate');
         const cvv = document.getElementById('cvv');
+        const creditCard = document.querySelector('.credit-card');
 
-        // Format card number as user types
+        // Format card number
         cardNumber.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
-            value = value.replace(/(.{4})/g, '$1 ').trim();
-            e.target.value = value;
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            e.target.value = formattedValue;
+            document.getElementById('card-number-display').textContent = 
+                formattedValue || '•••• •••• •••• ••••';
         });
 
-        // Format expiry date as user types
+        // Update card name
+        cardName.addEventListener('input', (e) => {
+            const value = e.target.value.toUpperCase();
+            document.getElementById('card-name-display').textContent = 
+                value || 'YOUR NAME HERE';
+        });
+
+        // Format expiry date
         expiryDate.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
                 value = value.slice(0, 2) + '/' + value.slice(2);
             }
             e.target.value = value;
+            document.getElementById('card-expiry-display').textContent = 
+                value || 'MM/YY';
         });
 
-        // Limit CVV to 3 digits
+        // Handle CVV focus/blur
+        cvv.addEventListener('focus', () => {
+            creditCard.classList.add('flipped');
+        });
+
+        cvv.addEventListener('blur', () => {
+            creditCard.classList.remove('flipped');
+        });
+
+        // Update CVV display
         cvv.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
+            document.getElementById('card-cvv-display').textContent = 
+                value || '•••';
         });
     }
 

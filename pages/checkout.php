@@ -53,18 +53,56 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title mb-4">Payment Information</h5>
+                        
+                        <!-- Credit Card Display -->
+                        <div class="credit-card mb-4">
+                            <div class="credit-card-inner">
+                                <!-- Front of card -->
+                                <div class="credit-card-front">
+                                    <div class="credit-card-logo">
+                                        <i class="bi bi-credit-card"></i>
+                                    </div>
+                                    <div class="credit-card-number" id="card-number-display">
+                                        •••• •••• •••• ••••
+                                    </div>
+                                    <div class="credit-card-name" id="card-name-display">
+                                        YOUR NAME HERE
+                                    </div>
+                                    <div class="credit-card-expiry" id="card-expiry-display">
+                                        MM/YY
+                                    </div>
+                                </div>
+                                <!-- Back of card -->
+                                <div class="credit-card-back">
+                                    <div class="credit-card-strip"></div>
+                                    <div class="credit-card-signature"></div>
+                                    <div class="credit-card-cvv" id="card-cvv-display">
+                                        •••
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Input Fields -->
+                        <div class="mb-3">
+                            <label for="cardName" class="form-label">Name on Card</label>
+                            <input type="text" class="form-control" id="cardName" name="cardName" required>
+                        </div>
                         <div class="mb-3">
                             <label for="cardNumber" class="form-label">Card Number</label>
-                            <input type="text" class="form-control" id="cardNumber" name="cardNumber" required>
+                            <input type="text" class="form-control" id="cardNumber" name="cardNumber" 
+                                   maxlength="19" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="expiryDate" class="form-label">Expiry Date</label>
-                                <input type="text" class="form-control" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                                <input type="text" class="form-control" id="expiryDate" name="expiryDate" 
+                                       placeholder="MM/YY" maxlength="5" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="cvv" class="form-label">CVV</label>
-                                <input type="text" class="form-control" id="cvv" name="cvv" required>
+                                <input type="text" class="form-control" id="cvv" name="cvv" 
+                                       maxlength="4" required>
                             </div>
                         </div>
                     </div>
