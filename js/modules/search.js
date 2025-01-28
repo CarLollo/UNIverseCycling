@@ -1,6 +1,7 @@
 import { APIService } from '../services/api-service.js';
 import { productsManager } from './products.js';
 import { AuthService } from '../services/auth.service.js';
+import { pageLoader } from './page-loader.js';
 
 export class SearchManager {
     constructor() {
@@ -27,7 +28,7 @@ export class SearchManager {
             if (e.key === 'Enter') {
                 const query = e.target.value.trim();
                 if (query.length > 0) {
-                    this.performSearch(query);
+                    pageLoader.loadPage('search', { query });
                 }
             }
         });
@@ -45,12 +46,6 @@ export class SearchManager {
 
     async performSearch(query) {
         try {
-            // Aggiorna l'URL
-            const url = new URL(window.location);
-            url.searchParams.set('action', 'search');
-            url.searchParams.set('query', query);
-            history.pushState({ action: 'search', query }, '', url);
-
             // Mostra il loading
             productsManager.showLoading();
             
@@ -65,13 +60,18 @@ export class SearchManager {
             // Aggiorna la vista
             const container = document.querySelector('.products-container');
             if (container) {
-                container.innerHTML = productsManager.renderProductsGrid(products);
+                container.innerHTML = `
+                    ${pageLoader.getBackLink()}
+                    <h2 class="mb-4">Search Results for: "${query}"</h2>
+                    ${productsManager.renderProductsGrid(products)}
+                `;
             }
         } catch (error) {
             console.error('Search error:', error);
             const container = document.querySelector('.products-container');
             if (container) {
                 container.innerHTML = `
+                    ${pageLoader.getBackLink()}
                     <div class="alert alert-danger" role="alert">
                         Error performing search. Please try again.
                     </div>

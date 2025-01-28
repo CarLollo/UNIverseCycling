@@ -34,28 +34,6 @@ export class ProductsManager {
         });
     }
 
-    handleInitialState() {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-            this.showProductDetails(id);
-        } else {
-            this.loadNewArrivals();
-        }
-    }
-
-    handleNavigationState() {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-            this.showProductDetails(id);
-        } else {
-            this.showProductsList();
-        }
-    }
-
     async loadNewArrivals() {
         if (!this.productsContainer) {
             console.error('Products container not found!');
@@ -168,39 +146,24 @@ export class ProductsManager {
                             <div class="mb-3">
                                 <label class="form-label">Quantity:</label>
                                 <div class="input-group" style="width: 140px;">
-                                    <button class="btn btn-outline-secondary" type="button" id="decrease-quantity">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(-1)">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <input type="number" id="product-quantity" class="form-control text-center" 
+                                    <input type="number" class="form-control text-center quantity-input" 
                                            value="1" min="1" max="${product.stock || 10}">
-                                    <button class="btn btn-outline-secondary" type="button" id="increase-quantity">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(1)">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <button class="btn btn-primary w-100" id="add-to-cart-btn">
+                            <button class="btn btn-primary w-100" onclick="productsManager.handleAddToCart(${productId})">
                                 Add to Cart
                             </button>
                         </div>
                     </div>
                 </div>
             `;
-
-            // Aggiungi event listeners dopo aver creato gli elementi
-            const decreaseBtn = document.getElementById('decrease-quantity');
-            const increaseBtn = document.getElementById('increase-quantity');
-            const addToCartBtn = document.getElementById('add-to-cart-btn');
-
-            if (decreaseBtn) {
-                decreaseBtn.addEventListener('click', () => this.updateQuantity(-1));
-            }
-            if (increaseBtn) {
-                increaseBtn.addEventListener('click', () => this.updateQuantity(1));
-            }
-            if (addToCartBtn) {
-                addToCartBtn.addEventListener('click', () => this.handleAddToCart(productId));
-            }
             
         } catch (error) {
             console.error('Error loading product details:', error);
@@ -216,7 +179,7 @@ export class ProductsManager {
     }
 
     updateQuantity(change) {
-        const input = document.getElementById('product-quantity');
+        const input = document.querySelector('.quantity-input');
         if (!input) return;
 
         const currentValue = parseInt(input.value) || 1;
@@ -227,7 +190,7 @@ export class ProductsManager {
 
     async handleAddToCart(productId) {
         try {
-            const quantityInput = document.getElementById('product-quantity');
+            const quantityInput = document.querySelector('.quantity-input');
             if (!quantityInput) {
                 throw new Error('Quantity input not found');
             }
