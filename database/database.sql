@@ -130,32 +130,32 @@ INSERT INTO tag (name) VALUES
 -- Insert sample products with actual categories and images
 INSERT INTO product (name, description, color, price, stock, image_path) VALUES
 -- Clothes
-('Pro Cycling Jersey', 'High-performance cycling jersey with moisture-wicking fabric', 'Blue', 89.99, 20, 'img/clothes/jersey_blue.jpg'),
-('Winter Cycling Jacket', 'Warm and waterproof cycling jacket for cold weather', 'Black', 149.99, 15, 'img/clothes/jacket_black.jpg'),
+('Pro Cycling Jersey', 'High-performance cycling jersey with moisture-wicking fabric', 'Blue', 89.99, 20, 'img/clothes/jersey_blue.webp'),
+('Winter Cycling Jacket', 'Warm and waterproof cycling jacket for cold weather', 'Black', 149.99, 15, 'img/clothes/jacket_black.webp'),
 
 -- Gears
-('Shimano Ultegra R8000', 'Professional grade gear shifter set', 'Silver', 299.99, 10, 'img/gears/ultegra_r8000.jpg'),
-('SRAM X01 Eagle', 'High-end mountain bike derailleur', 'Black', 259.99, 8, 'img/gears/sram_eagle.jpg'),
+('Shimano Ultegra R8000', 'Professional grade gear shifter set', 'Silver', 299.99, 10, 'img/gears/ultegra_r8000.webp'),
+('SRAM X01 Eagle', 'High-end mountain bike derailleur', 'Black', 259.99, 8, 'img/gears/sram_eagle.webp'),
 
 -- Helmets
-('Aero Pro Helmet', 'Aerodynamic racing helmet with excellent ventilation', 'White', 179.99, 12, 'img/helmets/aero_pro.jpg'),
-('Mountain Bike Helmet', 'Durable helmet with extended coverage', 'Green', 129.99, 18, 'img/helmets/mtb_green.jpg'),
+('Aero Pro Helmet', 'Aerodynamic racing helmet with excellent ventilation', 'White', 179.99, 12, 'img/helmets/aero_pro.webp'),
+('Mountain Bike Helmet', 'Durable helmet with extended coverage', 'Green', 129.99, 18, 'img/helmets/mtb_green.webp'),
 
 -- Saddles
-('Carbon Racing Saddle', 'Lightweight carbon fiber racing saddle', 'Black', 159.99, 15, 'img/saddles/carbon_race.jpg'),
-('Comfort Gel Saddle', 'Ergonomic gel saddle for comfortable rides', 'Brown', 89.99, 20, 'img/saddles/gel_comfort.jpg'),
+('Carbon Racing Saddle', 'Lightweight carbon fiber racing saddle', 'Black', 159.99, 15, 'img/saddles/carbon_race.webp'),
+('Comfort Gel Saddle', 'Ergonomic gel saddle for comfortable rides', 'Brown', 89.99, 20, 'img/saddles/gel_comfort.webp'),
 
 -- Shoes
-('Pro Race Shoes', 'Carbon-soled professional racing shoes', 'Red', 249.99, 10, 'img/shoes/race_red.jpg'),
-('MTB Trail Shoes', 'Durable mountain biking shoes with grip', 'Black', 189.99, 14, 'img/shoes/mtb_trail.jpg');
+('Pro Race Shoes', 'Carbon-soled professional racing shoes', 'Red', 249.99, 10, 'img/shoes/race_red.webp'),
+('MTB Trail Shoes', 'Durable mountain biking shoes with grip', 'Black', 189.99, 14, 'img/shoes/mtb_trail.webp');
 
 -- Insert categories
 INSERT INTO category (name, image_path) VALUES
-('Clothes', 'img/clothes/category.jpg'),
-('Gears', 'img/gears/category.jpg'),
-('Helmets', 'img/helmets/category.jpg'),
-('Saddles', 'img/saddles/category.jpg'),
-('Shoes', 'img/shoes/category.jpg');
+('Clothes', 'img/clothes/category.webp'),
+('Gears', 'img/gears/category.webp'),
+('Helmets', 'img/helmets/category.webp'),
+('Saddles', 'img/saddles/category.webp'),
+('Shoes', 'img/shoes/category.webp');
 
 -- Link products with categories
 INSERT INTO product_category (product_id, category_id) VALUES
@@ -180,3 +180,7 @@ AND p.product_id IN (1, 3, 5, 7, 9);
 -- Insert test user (password: Test123!)
 INSERT INTO users (email, password, first_name, last_name, phone, type) 
 VALUES ('test@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Test', 'User', '+1234567890', 'customer');
+
+-- Insert admin user (password: Admin123!)
+INSERT INTO users (email, password, first_name, last_name, phone, type) 
+VALUES ('admin@universe.com', '$2y$10$N1KXj6hiDDB886TrBo6k3uRmqEGi3kSVJe9pL9EE8QP9ay.c0x.Xy', 'Admin', 'Universe', '+1234567890', 'admin');
