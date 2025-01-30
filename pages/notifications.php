@@ -1,6 +1,5 @@
 <?php
 $pageTitle = "Notifications";
-include_once __DIR__ . '/../components/header.php';
 ?>
 
 <div class="container mt-4">

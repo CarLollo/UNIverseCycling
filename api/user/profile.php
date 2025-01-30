@@ -13,7 +13,7 @@ try {
     $token = str_replace('Bearer ', '', $headers['Authorization']);
     $decoded = json_decode(base64_decode($token), true);
 
-    $payload = json_decode(base64_decode($tokenParts[1]), true);
+    //$payload = json_decode(base64_decode($tokenParts[1]), true);
     if ($decoded && isset($decoded['email'])) {
         $userEmail = $decoded['email'];
         error_log("Email found: " . $userEmail);
@@ -26,13 +26,13 @@ try {
     $stmt->bind_param("s", $userEmail);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
         throw new Exception('User not found');
     }
 
     $user = $result->fetch_assoc();
-    
+
     echo json_encode([
         'success' => true,
         'user' => $user
