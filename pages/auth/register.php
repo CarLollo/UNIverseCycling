@@ -15,34 +15,34 @@ $pageTitle = "Register - UNIverseCycling";
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required />
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" required />
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required
                                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                                   title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                                   title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" />
                         </div>
 
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
                         </div>
 
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                            <input type="tel" class="form-control" id="phone" name="phone" required />
                         </div>
 
                         <div class="mb-3">

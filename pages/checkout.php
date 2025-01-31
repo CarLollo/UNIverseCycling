@@ -10,11 +10,11 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" readonly>
+                                <input type="text" class="form-control" id="firstName" name="firstName" readonly />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" readonly>
+                                <input type="text" class="form-control" id="lastName" name="lastName" readonly />
                             </div>
                         </div>
                     </div>
@@ -42,10 +42,10 @@
                                 <p class="form-control-plaintext">Italia</p>
                             </div>
                         </div>
-                        <input type="hidden" name="address" value="Via dell'Università, 50">
-                        <input type="hidden" name="city" value="Cesena">
-                        <input type="hidden" name="zip" value="47521">
-                        <input type="hidden" name="country" value="IT">
+                        <input type="hidden" name="address" value="Via dell'Università, 50" />
+                        <input type="hidden" name="city" value="Cesena" />
+                        <input type="hidden" name="zip" value="47521" />
+                        <input type="hidden" name="country" value="IT" />
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title mb-4">Payment Information</h5>
-                        
+
                         <!-- Credit Card Display -->
                         <div class="credit-card mb-4">
                             <div class="credit-card-inner">
@@ -86,23 +86,23 @@
                         <!-- Card Input Fields -->
                         <div class="mb-3">
                             <label for="cardName" class="form-label">Name on Card</label>
-                            <input type="text" class="form-control" id="cardName" name="cardName" required>
+                            <input type="text" class="form-control" id="cardName" name="cardName" required />
                         </div>
                         <div class="mb-3">
                             <label for="cardNumber" class="form-label">Card Number</label>
-                            <input type="text" class="form-control" id="cardNumber" name="cardNumber" 
-                                   maxlength="19" required>
+                            <input type="text" class="form-control" id="cardNumber" name="cardNumber"
+                                   maxlength="19" required />
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="expiryDate" class="form-label">Expiry Date</label>
-                                <input type="text" class="form-control" id="expiryDate" name="expiryDate" 
-                                       placeholder="MM/YY" maxlength="5" required>
+                                <input type="text" class="form-control" id="expiryDate" name="expiryDate"
+                                       placeholder="MM/YY" maxlength="5" required />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="cvv" class="form-label">CVV</label>
-                                <input type="text" class="form-control" id="cvv" name="cvv" 
-                                       maxlength="4" required>
+                                <input type="text" class="form-control" id="cvv" name="cvv"
+                                       maxlength="4" required />
                             </div>
                         </div>
                     </div>
@@ -120,7 +120,7 @@
                     <div id="order-items">
                         <!-- Order items will be loaded dynamically -->
                     </div>
-                    <hr>
+                    <hr />
                     <div class="d-flex justify-content-between mb-3">
                         <span>Subtotal</span>
                         <span id="subtotal">€0.00</span>
