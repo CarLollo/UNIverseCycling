@@ -15,7 +15,7 @@ $pageTitle = "Notifications";
         <div class="alert" role="alert">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <i class="notification-icon me-2"></i>
+                    <em class="notification-icon me-2"></em>
                     <span class="notification-message"></span>
                 </div>
                 <button type="button" class="btn-close" aria-label="Close"></button>

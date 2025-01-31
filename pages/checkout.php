@@ -6,7 +6,7 @@
                 <!-- User Information -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">User Information</h5>
+                        <h3 class="card-title mb-4">User Information</h3>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstName" class="form-label">First Name</label>
@@ -23,7 +23,7 @@
                 <!-- Shipping Information -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">Shipping Information</h5>
+                        <h3 class="card-title mb-4">Shipping Information</h3>
                         <div class="mb-3">
                             <label class="form-label">Address</label>
                             <p class="form-control-plaintext">Via dell'Università, 50</p>
@@ -52,7 +52,7 @@
                 <!-- Payment Information -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">Payment Information</h5>
+                        <h3 class="card-title mb-4">Payment Information</h3>
 
                         <!-- Credit Card Display -->
                         <div class="credit-card mb-4">
@@ -60,7 +60,7 @@
                                 <!-- Front of card -->
                                 <div class="credit-card-front">
                                     <div class="credit-card-logo">
-                                        <i class="bi bi-credit-card"></i>
+                                        <em class="bi bi-credit-card"></em>
                                     </div>
                                     <div class="credit-card-number" id="card-number-display">
                                         •••• •••• •••• ••••
@@ -116,7 +116,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Order Summary</h5>
+                    <h3 class="card-title mb-4">Order Summary</h3>
                     <div id="order-items">
                         <!-- Order items will be loaded dynamically -->
                     </div>
