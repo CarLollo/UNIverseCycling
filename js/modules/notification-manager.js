@@ -18,12 +18,12 @@ export class NotificationManager {
         this.loadNotifications();
         if (this.badge) {
             this.updateBadgeCount();
-            // Aggiorna il contatore ogni minuto
+            // Aggiorna il contatore ogni 2 secondi
             setInterval(() => {
                 if (AuthService.isAuthenticated()) {
                     this.updateBadgeCount();
                 }
-            }, 60000);
+            }, 2000);
         }
 
         // Crea il container per i toast se non esiste
@@ -78,7 +78,7 @@ export class NotificationManager {
     async updateBadgeCount() {
         try {
             const result = await this.makeAuthenticatedRequest('/UNIverseCycling/api/notifications/count-unread.php');
-            
+
             if (result.success && this.badge) {
                 const count = result.count;
                 if (count > 0) {
@@ -100,7 +100,7 @@ export class NotificationManager {
                 method: 'POST',
                 body: JSON.stringify({ settings: this.settings })
             });
-            
+
             if (result.success) {
                 this.notifications = result.notifications;
                 this.renderNotifications();
@@ -127,7 +127,7 @@ export class NotificationManager {
                 method: 'POST',
                 body: JSON.stringify({ type, message })
             });
-            
+
             if (result.success) {
                 // Aggiorna il contatore delle notifiche non lette
                 this.updateBadgeCount();
@@ -137,34 +137,6 @@ export class NotificationManager {
         } catch (error) {
             console.error('Error creating notification:', error);
             return false;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${this.getBackgroundColor(type)} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="${this.getIcon(type)} me-2"></i>
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        
-        const container = document.querySelector('.toast-container');
-        if (container) {
-            container.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-
-            // Rimuovi il toast dopo che è stato nascosto
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
         }
     }
 
@@ -190,14 +162,14 @@ export class NotificationManager {
 
     renderNotifications() {
         if (!this.container) return;
-        
+
         this.container.innerHTML = '';
-        
+
         if (this.notifications.length === 0) {
             this.container.innerHTML = '<div class="text-center py-5">Non ci sono notifiche</div>';
             return;
         }
-        
+
         this.notifications.forEach(notification => {
             const element = this.createNotificationElement(notification);
             this.container.appendChild(element);
@@ -222,9 +194,9 @@ export class NotificationManager {
     createNotificationElement(notification) {
         const div = document.createElement('div');
         div.className = `notification ${notification.type}`;
-        
+
         const icon = this.getNotificationIcon(notification.type);
-        
+
         div.innerHTML = `
             <div class="d-flex align-items-start">
                 <i class="bi ${icon} notification-icon"></i>
@@ -262,7 +234,7 @@ export class NotificationManager {
                 method: 'POST',
                 body: JSON.stringify({ notification_id: notificationId })
             });
-            
+
             if (result.success) {
                 // Rimuovi la notifica dall'array locale
                 this.notifications = this.notifications.filter(n => n.id !== notificationId);

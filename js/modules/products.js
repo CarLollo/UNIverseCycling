@@ -76,18 +76,18 @@ export class ProductsManager {
     }
 
     renderProductCard(product, categoryId = null) {
-        const imagePath = product.image_path.startsWith('/') 
+        const imagePath = product.image_path.startsWith('/')
             ? `/UNIverseCycling${product.image_path}`
             : `/UNIverseCycling/${product.image_path}`;
 
         return `
             <div class="col">
-                <div class="card h-100 product-card" 
+                <div class="card h-100 product-card"
                      data-product-id="${product.product_id}"
                      data-category-id="${categoryId || product.category_id || ''}"
                      role="button">
-                    <img src="${imagePath}" 
-                         class="card-img-top" 
+                    <img src="${imagePath}"
+                         class="card-img-top"
                          alt="${product.name}"
                          style="height: 200px; object-fit: cover;"
                          onerror="this.src='/UNIverseCycling/img/placeholder.jpg'">
@@ -119,15 +119,15 @@ export class ProductsManager {
                     ${pageLoader.getBackLink()}
                     <div class="row">
                         <div class="col-md-6">
-                            <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}" 
-                                 class="img-fluid rounded" 
+                            <img src="${product.image_path.startsWith('/') ? `/UNIverseCycling${product.image_path}` : `/UNIverseCycling/${product.image_path}`}"
+                                 class="img-fluid rounded"
                                  alt="${product.name}">
                         </div>
                         <div class="col-md-6">
                             <h1>${product.name}</h1>
                             <p class="h3 text-primary">€${parseFloat(product.price).toFixed(2)}</p>
                             <p class="my-4">${product.description || 'No description available.'}</p>
-                            
+
                             <div class="mb-3">
                                 <div class="mb-2">
                                     <span class="text-muted">Available: </span>
@@ -140,7 +140,7 @@ export class ProductsManager {
                                     <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(-1)">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <input type="number" class="form-control text-center quantity-input" 
+                                    <input type="number" class="form-control text-center quantity-input"
                                            value="1" min="1" max="${product.stock || 10}"
                                            style="-webkit-appearance: none; -moz-appearance: textfield; margin: 0;">
                                     <button class="btn btn-outline-secondary" type="button" onclick="productsManager.updateQuantity(1)">
@@ -193,8 +193,8 @@ export class ProductsManager {
             }
 
             await APIService.addToCart(productId, quantity);
-            await notificationManager.createNotification('success', 'Product added to cart');
-            
+            //await notificationManager.createNotification('success', 'Product added to cart');
+
             const { cartManager } = await import('./cart.js');
             await cartManager.loadCart();
         } catch (error) {
