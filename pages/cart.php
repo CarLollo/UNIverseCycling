@@ -6,8 +6,8 @@
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between mb-3">
-                <h5 class="card-title">Total</h5>
-                <h5 id="cart-total">€0.00</h5>
+                <h3 class="card-title">Total</h3>
+                <h3 id="cart-total">€0.00</h3>
             </div>
             <button id="checkout-btn" class="btn btn-primary w-100">
                 Proceed to Checkout

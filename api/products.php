@@ -53,7 +53,7 @@ try {
                 throw new Exception('Search query is required');
             }
             $products = $productQueries->searchProducts($query);
-            
+
             header("Content-Type: application/json");
             sendJsonResponse($products);
             break;
@@ -65,27 +65,27 @@ try {
                 if (!isset($headers['Authorization'])) {
                     throw new Exception('No authorization token provided');
                 }
-            
+
                 $token = str_replace('Bearer ', '', $headers['Authorization']);
                 $tokenJson = json_decode(base64_decode($token), true);
-            
+
                 if (!isset($tokenJson['email'])) {
                     throw new Exception('Invalid token format - no email found');
                 }
-            
+
                 $userEmail = $tokenJson['email'];
-            
+
                 // Get user ID from email
                 $stmt = $mysqli->prepare("SELECT id, type FROM users WHERE email = ?");
                 $stmt->bind_param("s", $userEmail);
-                
+
                 if (!$stmt->execute()) {
                     throw new Exception('Failed to get user: ' . $mysqli->error);
                 }
-                
+
                 $result = $stmt->get_result();
                 $user = $result->fetch_assoc();
-                
+
                 if (!$user) {
                     throw new Exception('User not found');
                 }
@@ -133,15 +133,15 @@ try {
 
                 // Crea il nome del file usando il nome del prodotto
                 $fileExtension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-                
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
                 if (!in_array($fileExtension, $allowedExtensions)) {
                     throw new Exception('Invalid file type. Allowed: ' . implode(', ', $allowedExtensions));
                 }
 
                 // Crea un nome file semplice dal nome del prodotto
                 $fileName = strtolower(str_replace(' ', '', $_POST['name'])) . '.' . $fileExtension;
-                
+
                 // Usa la directory della categoria
                 $categoryDir = strtolower($category['name']);
                 $baseDir = realpath(__DIR__ . '/../img');
@@ -154,7 +154,7 @@ try {
                 error_log("Upload file path: " . $uploadFile);
                 error_log("Directory exists: " . (is_dir($targetDir) ? 'yes' : 'no'));
                 error_log("Directory writable: " . (is_writable($targetDir) ? 'yes' : 'no'));
-                
+
                 // Carica il file
                 if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
                     $error = error_get_last();
@@ -172,12 +172,12 @@ try {
                 try {
                     // Inserisci il prodotto
                     $stmt = $mysqli->prepare("
-                        INSERT INTO product (name, description, color, price, stock, image_path) 
+                        INSERT INTO product (name, description, color, price, stock, image_path)
                         VALUES (?, ?, ?, ?, ?, ?)
                     ");
-                    
+
                     $imagePath = "img/$categoryDir/" . $fileName;
-                    $stmt->bind_param("sssdis", 
+                    $stmt->bind_param("sssdis",
                         $_POST['name'],
                         $_POST['description'],
                         $_POST['color'],
@@ -185,11 +185,11 @@ try {
                         $_POST['stock'],
                         $imagePath
                     );
-                    
+
                     if (!$stmt->execute()) {
                         throw new Exception('Failed to insert product: ' . $mysqli->error);
                     }
-                    
+
                     $productId = $mysqli->insert_id;
 
                     // Collega le categorie

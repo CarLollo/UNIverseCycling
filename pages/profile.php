@@ -5,50 +5,50 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <h2 class="mb-4">Settings</h2>
-                        
+
                         <!-- General Section -->
                         <div class="mb-4">
-                            <h5 class="mb-3">General</h5>
-                            
+                            <h3 class="mb-3">General</h3>
+
                             <!-- Edit Profile -->
                             <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="edit-profile">
-                                <i class="bi bi-person me-3"></i>
+                                <em class="bi bi-person me-3"></em>
                                 <div class="flex-grow-1">Edit Profile</div>
-                                <i class="bi bi-chevron-right"></i>
+                                <em class="bi bi-chevron-right"></em>
                             </a>
 
                             <!-- Change Password -->
                             <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="change-password">
-                                <i class="bi bi-lock me-3"></i>
+                                <em class="bi bi-lock me-3"></em>
                                 <div class="flex-grow-1">Change Password</div>
-                                <i class="bi bi-chevron-right"></i>
+                                <em class="bi bi-chevron-right"></em>
                             </a>
 
                             <!-- Notification Settings -->
                             <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="notification-settings">
-                                <i class="bi bi-bell me-3"></i>
+                                <em class="bi bi-bell me-3"></em>
                                 <div class="flex-grow-1">Notifications</div>
-                                <i class="bi bi-chevron-right"></i>
+                                <em class="bi bi-chevron-right"></em>
                             </a>
 
                             <!-- Order History -->
                             <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2" data-action="order-history">
-                                <i class="bi bi-clock-history me-3"></i>
+                                <em class="bi bi-clock-history me-3"></em>
                                 <div class="flex-grow-1">Order History</div>
-                                <i class="bi bi-chevron-right"></i>
+                                <em class="bi bi-chevron-right"></em>
                             </a>
 
                             <a href="#" class="d-flex align-items-center text-decoration-none text-dark p-3 rounded hover-bg mb-2 admin-only" data-action="adminProductModal">
-                                <i class="bi bi-box-seam me-3"></i>
+                                <em class="bi bi-box-seam me-3"></em>
                                 <div class="flex-grow-1">Product Management</div>
-                                <i class="bi bi-chevron-right"></i>
+                                <em class="bi bi-chevron-right"></em>
                             </a>
                         </div>
 
                         <!-- Logout Button -->
                         <div class="pt-3 border-top">
                             <button class="btn btn-outline-danger w-100" id="logout-btn">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                <em class="bi bi-box-arrow-right me-2"></em>Logout
                             </button>
                         </div>
                     </div>
@@ -62,26 +62,26 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Profile</h5>
+                    <h4 class="modal-title">Edit Profile</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="edit-profile-form">
                         <div class="mb-3">
-                            <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" name="firstName" required>
+                            <label class="form-label" for="firstName">First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" name="lastName" required>
+                            <label class="form-label" for="lastName">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" required>
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Phone</label>
-                            <input type="tel" class="form-control" name="phone" required>
+                            <label class="form-label" for="phone">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required />
                         </div>
                     </form>
                 </div>
@@ -98,22 +98,22 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Change Password</h5>
+                    <h4 class="modal-title">Change Password</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="change-password-form">
                         <div class="mb-3">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" class="form-control" name="currentPassword" required>
+                            <label class="form-label" for="pass">Current Password</label>
+                            <input type="password" class="form-control" id="pass" name="currentPassword" required />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">New Password</label>
-                            <input type="password" class="form-control" name="newPassword" required>
+                            <label class="form-label" for="newpass">New Password</label>
+                            <input type="password" class="form-control" id="newpass" name="newPassword" required />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" name="confirmPassword" required>
+                            <label class="form-label" for="confnewpass">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confnewpass" name="confirmPassword" required />
                         </div>
                     </form>
                 </div>
@@ -130,7 +130,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Notification Settings</h5>
+                    <h4 class="modal-title">Notification Settings</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -138,30 +138,30 @@
                         <div class="mb-3">
                             <label class="form-label">Notification Types</label>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="success-notifications" checked>
+                                <input class="form-check-input" type="checkbox" id="success-notifications" checked />
                                 <label class="form-check-label" for="success-notifications">
-                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    <em class="bi bi-check-circle text-success me-2"></em>
                                     Success Notifications
                                 </label>
                             </div>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="info-notifications" checked>
+                                <input class="form-check-input" type="checkbox" id="info-notifications" checked />
                                 <label class="form-check-label" for="info-notifications">
-                                    <i class="bi bi-info-circle text-info me-2"></i>
+                                    <em class="bi bi-info-circle text-info me-2"></em>
                                     Info Notifications
                                 </label>
                             </div>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="warning-notifications" checked>
+                                <input class="form-check-input" type="checkbox" id="warning-notifications" checked />
                                 <label class="form-check-label" for="warning-notifications">
-                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    <em class="bi bi-exclamation-triangle text-warning me-2"></em>
                                     Warning Notifications
                                 </label>
                             </div>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="error-notifications" checked>
+                                <input class="form-check-input" type="checkbox" id="error-notifications" checked />
                                 <label class="form-check-label" for="error-notifications">
-                                    <i class="bi bi-exclamation-circle text-danger me-2"></i>
+                                    <em class="bi bi-exclamation-circle text-danger me-2"></em>
                                     Error Notifications
                                 </label>
                             </div>
@@ -178,7 +178,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Order History</h5>
+                    <h4 class="modal-title">Order History</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -198,14 +198,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Product</h5>
+                    <h4 class="modal-title">Add New Product</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addProductForm">
                         <div class="mb-3">
                             <label for="productName" class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="productName" required>
+                            <input type="text" class="form-control" id="productName" required />
                         </div>
                         <div class="mb-3">
                             <label for="productDescription" class="form-label">Description</label>
@@ -213,19 +213,19 @@
                         </div>
                         <div class="mb-3">
                             <label for="productPrice" class="form-label">Price (€)</label>
-                            <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                            <input type="number" class="form-control" id="productPrice" step="0.01" required />
                         </div>
                         <div class="mb-3">
                             <label for="productStock" class="form-label">Stock</label>
-                            <input type="number" class="form-control" id="productStock" required>
+                            <input type="number" class="form-control" id="productStock" required />
                         </div>
                         <div class="mb-3">
                             <label for="productColor" class="form-label">Color</label>
-                            <input type="text" class="form-control" id="productColor" required>
+                            <input type="text" class="form-control" id="productColor" required />
                         </div>
                         <div class="mb-3">
                             <label for="productImage" class="form-label">Product Image</label>
-                            <input type="file" class="form-control" id="productImage" accept="image/*" required>
+                            <input type="file" class="form-control" id="productImage" accept="image/*" required />
                         </div>
                         <div class="mb-3">
                             <label for="productCategories" class="form-label">Categories</label>

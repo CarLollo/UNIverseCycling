@@ -145,10 +145,10 @@ export class PageLoader {
         document.addEventListener('click', (e) => {
             // Trova il link più vicino nell'albero degli eventi
             const link = e.target.closest('a[href]');
-            
+
             // Se non è un link o è un link di un modale o ha data-page, ignora
-            if (!link || 
-                link.closest('.modal') || 
+            if (!link ||
+                link.closest('.modal') ||
                 link.hasAttribute('data-page') ||
                 link.hasAttribute('data-action') ||
                 link.hasAttribute('data-bs-toggle')) {
@@ -175,15 +175,15 @@ export class PageLoader {
 
     handleInitialPage() {
         // Check authentication first
-        if (!AuthService.isAuthenticated() && 
+        if (!AuthService.isAuthenticated() &&
             !['login', 'register'].includes(this.getCurrentPage())) {
             this.loadPage('login');
             return;
         }
-    
+
         const urlParams = new URLSearchParams(window.location.search);
         const page = urlParams.get('page') || 'home';
-        
+
         if (this.pages.has(page)) {
             this.loadPage(page);
         } else {
@@ -262,7 +262,7 @@ export class PageLoader {
         // Costruisci l'URL con i parametri
         const queryParams = new URLSearchParams(params).toString();
         const newUrl = `?page=${pageName}${queryParams ? '&' + queryParams : ''}`;
-        
+
         // Aggiorna l'URL del browser e la history
         if (pushState) {
             const state = { page: pageName, params };
@@ -323,7 +323,7 @@ export class PageLoader {
         const currentPage = this.getCurrentPage();
         const params = new URLSearchParams(window.location.search);
         const state = window.history.state || {};
-        
+
         // Se siamo nella pagina delle categorie e c'è un ID, torniamo alla lista delle categorie
         if (currentPage === 'categories' && params.has('id')) {
             return `
@@ -376,6 +376,7 @@ export class PageLoader {
     updateActiveNavItem(pageName) {
         document.querySelectorAll('[data-page]').forEach(link => {
             link.classList.toggle('active', link.dataset.page === pageName);
+            console.log("Pagina attiva: " + pageName);
         });
     }
 }
