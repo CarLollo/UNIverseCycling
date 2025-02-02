@@ -70,28 +70,32 @@ export class PageLoader {
             onLoad: () => {
                 productsManager.init();
                 searchManager.init();
-            }
+            },
+            showTabs: false
         });
 
         this.pages.set('cart', {
             url: '/UNIverseCycling/pages/cart.php',
             onLoad: () => {
                 cartManager.init();
-            }
+            },
+            showTabs: false
         });
 
         this.pages.set('checkout', {
             url: '/UNIverseCycling/pages/checkout.php',
             onLoad: () => {
                 checkoutManager.init();
-            }
+            },
+            showTabs: false
         });
 
         this.pages.set('profile', {
             url: '/UNIverseCycling/pages/profile.php',
             onLoad: () => {
                 profileManager.init();
-            }
+            },
+            showTabs: false
         });
 
         this.pages.set('notifications', {
@@ -99,7 +103,8 @@ export class PageLoader {
             onLoad: () => {
                 const notificationManager = new NotificationManager();
                 notificationManager.init();
-            }
+            },
+            showTabs: false
         });
 
         this.pages.set('product', {
@@ -110,7 +115,8 @@ export class PageLoader {
                 } else {
                     this.loadPage('home');
                 }
-            }
+            },
+            showTabs: false
         });
     }
 
@@ -232,16 +238,14 @@ export class PageLoader {
 
         this.currentPage = pageName;
 
-        // Aggiorna il tab attivo solo se la pagina deve mostrare i tabs
-        if (page.showTabs) {
-            document.querySelectorAll('.nav-link').forEach(tab => {
-                if (tab.dataset.page === pageName) {
-                    tab.classList.add('active');
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-        }
+        // Aggiorna SEMPRE il tab attivo, indipendentemente da page.showTabs
+        document.querySelectorAll('.nav-link').forEach(tab => {
+            if (tab.dataset.page === pageName) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
 
         // Gestisci la visibilità degli elementi di navigazione
         if (page.hideNav) {
