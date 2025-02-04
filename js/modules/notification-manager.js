@@ -18,12 +18,12 @@ export class NotificationManager {
         this.loadNotifications();
         if (this.badge) {
             this.updateBadgeCount();
-            // Aggiorna il contatore ogni 2 secondi
+            // Aggiorna il contatore ogni secondo
             setInterval(() => {
                 if (AuthService.isAuthenticated()) {
                     this.updateBadgeCount();
                 }
-            }, 2000);
+            }, 1000);
         }
 
         // Crea il container per i toast se non esiste

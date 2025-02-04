@@ -15,7 +15,7 @@ export class SearchManager {
             return;
         }
         this.searchInput = document.querySelector('.search-input');
-        
+
         if (this.searchInput) {
             this.bindEvents();
             this.handleInitialSearch();
@@ -30,6 +30,8 @@ export class SearchManager {
                 if (query.length > 0) {
                     pageLoader.loadPage('search', { query });
                 }
+                // Cancella il contenuto della search
+                this.searchInput.value = '';
             }
         });
     }
@@ -37,9 +39,9 @@ export class SearchManager {
     handleInitialSearch() {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('query');
-        
+
         if (query) {
-            this.searchInput.value = query;
+            //this.searchInput.value = query;
             this.performSearch(query);
         }
     }
@@ -48,15 +50,15 @@ export class SearchManager {
         try {
             // Mostra il loading
             productsManager.showLoading();
-            
+
             // Esegui la ricerca
             const products = await APIService.searchProducts(query);
-            
+
             // Aggiorna la cache dei prodotti
             products.forEach(product => {
                 productsManager.products.set(product.product_id, product);
             });
-            
+
             // Aggiorna la vista
             const container = document.querySelector('.products-container');
             if (container) {
