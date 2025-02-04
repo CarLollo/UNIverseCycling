@@ -149,7 +149,7 @@ export class ProductsManager {
                                 </div>
                             </div>
 
-                            <button class="btn btn-primary w-100" onclick="productsManager.handleAddToCart(${productId})"
+                           <button class="btn btn-primary w-100" onclick="productsManager.handleAddToCart('${productId}', '${product.name}')">
                                     ${product.stock === 0 ? 'disabled' : ''}>
                                 ${product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                             </button>
@@ -180,7 +180,7 @@ export class ProductsManager {
         input.value = newValue;
     }
 
-    async handleAddToCart(productId) {
+    async handleAddToCart(productId, productName) {
         try {
             const quantityInput = document.querySelector('.quantity-input');
             if (!quantityInput) {
@@ -193,7 +193,7 @@ export class ProductsManager {
             }
 
             await APIService.addToCart(productId, quantity);
-            //await notificationManager.createNotification('success', 'Product added to cart');
+            await notificationManager.createNotification('success', `"${productName}" aggiunto al carrello`);
 
             const { cartManager } = await import('./cart.js');
             await cartManager.loadCart();

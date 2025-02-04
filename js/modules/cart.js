@@ -5,6 +5,7 @@ import { notificationManager } from './notification-manager.js';
 export class CartManager {
     constructor() {
         this.cartItems = [];
+        this.isProcessing = false;
     }
 
     init() {
@@ -19,11 +20,9 @@ export class CartManager {
     }
 
     bindEvents() {
-        console.log('Binding events...');
         document.addEventListener('click', async (e) => {
             const removeBtn = e.target.closest('.remove-from-cart');
-            if (removeBtn) {
-                console.log('Removing from cart...');
+            if (removeBtn && !this.isProcessing) {
                 e.preventDefault();
                 const productId = removeBtn.dataset.productId;
                 await this.removeFromCart(productId);
@@ -41,10 +40,8 @@ export class CartManager {
         try {
             console.log('Loading cart...');
             this.cartItems = await APIService.getCartItems();
-            console.log('Cart items loaded:', this.cartItems);
             this.updateCartBadge();
             
-            // Mostra il carrello solo se siamo nella pagina del carrello
             const cartContainer = document.getElementById('cart-items');
             if (cartContainer) {
                 this.showCart();
@@ -119,30 +116,33 @@ export class CartManager {
     }
 
     async removeFromCart(productId) {
+        if (this.isProcessing) return;
+
+        this.isProcessing = true;
         try {
+            const removeBtn = document.querySelector(`.remove-from-cart[data-product-id="${productId}"]`);
+            if (removeBtn) {
+                removeBtn.disabled = true;
+                removeBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+            }
+            const product = this.cartItems.find(item => item.product_id == productId);
+            const productName = product ? product.name : 'Prodotto';
             await APIService.removeFromCart(productId);
             await this.loadCart();
-            await notificationManager.createNotification('success', 'Prodotto rimosso dal carrello');
+            await notificationManager.createNotification(
+                'success', 
+                `"${productName}" è stato rimosso dal carrello`
+            );
         } catch (error) {
             console.error('Error removing from cart:', error);
             await notificationManager.createNotification('error', 'Errore durante la rimozione dal carrello');
-        }
-    }
-
-    async addToCart(productId, quantity = 1) {
-        if (!AuthService.isAuthenticated()) {
-            await notificationManager.createNotification('warning', 'Devi effettuare il login per aggiungere prodotti al carrello');
-            window.location.href = '/UNIverseCycling/pages/auth/login.php';
-            return;
-        }
-
-        try {
-            await APIService.addToCart(productId, quantity);
-            await this.loadCart();
-            await notificationManager.createNotification('success', 'Prodotto aggiunto al carrello');
-        } catch (error) {
-            console.error('Error adding to cart:', error);
-            await notificationManager.createNotification('error', 'Errore durante l\'aggiunta al carrello');
+        } finally {
+            this.isProcessing = false;
+            const removeBtn = document.querySelector(`.remove-from-cart[data-product-id="${productId}"]`);
+            if (removeBtn) {
+                removeBtn.disabled = false;
+                removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
+            }
         }
     }
 
